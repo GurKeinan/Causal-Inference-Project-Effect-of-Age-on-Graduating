@@ -1,0 +1,48 @@
+This is BibTeX, Version 0.99d
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: confounders.aux
+Reallocating 'name_of_file' (item size: 1) to 9 items.
+The style file: plainnat.bst
+Reallocating 'name_of_file' (item size: 1) to 11 items.
+Database file #1: references.bib
+You've used 2 entries,
+            2773 wiz_defined-function locations,
+            606 strings with 5252 characters,
+and the built_in function-call counts, 736 in all, are:
+= -- 63
+> -- 31
+< -- 2
++ -- 11
+- -- 9
+* -- 51
+:= -- 123
+add.period$ -- 7
+call.type$ -- 2
+change.case$ -- 9
+chr.to.int$ -- 2
+cite$ -- 4
+duplicate$ -- 39
+empty$ -- 65
+format.name$ -- 13
+if$ -- 148
+int.to.chr$ -- 1
+int.to.str$ -- 1
+missing$ -- 2
+newline$ -- 19
+num.names$ -- 8
+pop$ -- 16
+preamble$ -- 1
+purify$ -- 7
+quote$ -- 0
+skip$ -- 29
+stack$ -- 0
+substring$ -- 7
+swap$ -- 3
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 22
+warning$ -- 0
+while$ -- 7
+width$ -- 0
+write$ -- 34
