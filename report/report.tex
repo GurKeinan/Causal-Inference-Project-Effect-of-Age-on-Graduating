@@ -3,12 +3,7 @@
 \setlength{\parskip}{0.2em} % Adjust '1em' to your preference
 
 \usepackage{geometry}
-\geometry{
-  left=15mm,   % Sets the left margin
-  right=15mm,  % Sets the right margin
-  top=15mm,    % Sets the top margin
-  bottom=15mm  % Sets the bottom margin
-}
+\geometry{margin=1in}
 
 \usepackage{times}  % DO NOT CHANGE THIS
 \usepackage{helvet}  % DO NOT CHANGE THIS
@@ -18,6 +13,13 @@
 \usepackage{hyperref}
 \usepackage{natbib}
 \bibliographystyle{plainnat}
+
+\usepackage{xcolor}
+\newcommand{\todo}[1]{{\color{orange}{TODO: #1}}}
+\newcommand{\note}[1]{{\color{blue}{NOTE: #1}}}
+\newcommand{\gur}[1]{{\color{teal}{Gur: #1}}}
+\newcommand{\yarden}[1]{{\color{magenta}{Yarden: #1}}}
+
 
 \title{The Effect of Age of Enrollment on the Probability of Graduating in Courses}
 \author{Gur Keinan 213635899 \and Yarden Adi 212585848}
@@ -29,19 +31,89 @@
 \maketitle
 
 \begin{abstract}
-    
+    Many adolescents worldwide have wondered when they should start their journey in higher education. The writers of this project themselves had decided long ago to join the 'Atuda' program, which means starting university at the relatively young age of eighteen. Thus, it is natural to wonder - does the student's age at the start of learning at the university affect the success of the student? An answer to this question can drastically change the landscape of the campuses worldwide and the grades of those studying there. In this causal inference project, we aim to explore precisely that. Specifically, we investigate the following causal question: \emph{What is the causal effect of being an adult student (over 21) on the probability of completing academic courses?} Throughout this project, we present and explore the data we use to tackle this question and determine its suitability for causal analysis tasks, formally present the methods we use to answer the research question, present and discuss the analysis results, and conclude the project. One can find all of the resources used in the project in this \href{https://github.com/GurKeinan/Causal-Inference-Project-Effect-of-Age-on-Graduating}{GitHub repository}.
 \end{abstract}
+
+\textbf{Note on AI Usage:} We did not use generative AI to write this report. We only used ChatGPT, Claude, and Grammarly for revisions and corrections of our own writing.
 
 \section{Data Review and Preprocessing}
 
+\gur{Opening sentence.}
+
+\subsection{Data Review}
+
+The data used in our project originated from research done in Portugal by the \href{https://www.ipportalegre.pt/pt/}{Polytechnic Institute of Portalegre} (\gur{Equivalent to college}), as an attempt to provide information to the tutoring team about the risk of students' dropout and failure \citep{data7110146}. Commonly, it is used to build machine learning models for predicting academic performance and dropout (see relevant \href{https://www.kaggle.com/datasets/ankanhore545/dropout-or-academic-success/data}{Kaggle competitions in this subject}).
+
+The data contains information about students' pre-academic background, age, academic performance, social and economic status, and other relevant variables. It consists of 4424 records and 37 variables \todo{number of categorical and numerical}, including the enrollment age. The dataset includes a trinary outcome variable indicating whether a student dropped out, graduated, or is still enrolled in the course. 
+
+The data was created by joining 3 primary data sources: 
+\begin{enumerate}
+    \item CNAES (National Competition for Access to Higher Education) - contains information about students' academic backgrounds, demographics, and course applications at the time of their enrollment in Portuguese higher education institutions.
+    \item AMS (Academic Management System) - provides student records data, including demographic information, course enrollments, and academic performance throughout their studies.
+    \item PORDATA (Contemporary Portugal Database) - provides macroeconomic data, including unemployment, inflation, and GDP figures.
+\end{enumerate}
+
+
+\todo{Figure star of treatment and target distributions, discussion.}
+
+\todo{Age limitation in Portugal.}
+
+\subsection{Data Preprocessing}
+
+\paragraph{Treatment and Target variables} Following our causal question, we introduce a new binary variable - "being over 21". This variable acts as the \emph{treatment variable} in our analysis. We omit the numerical age variable for the rest of the analysis. Additionally, as our question focuses on the probability of completing academic courses, we introduce another binary variable - "Graduated from the course" rather than the commonly used trinary variable - "graduate/  enrolled/ dropout". This variable is the \emph{target variable} in our analysis.
+
+\paragraph{Post-treatment variables} The dataset contains multiple records of the students' academic accomplishments during their first year of higher education. Although informative for 
+
+
+% Preprocessing:
+% \begin{itemize}
+%     \item Removing post-treatment variables with explanation.
+%     \item Removing unnecessary variables for easier analysis.
+%     \item Scaling variables? 
+%     \item One-hot vectors for categorical variables?
+%     \item Sub categorizing some variables for easier analysis. 
+% \end{itemize}
+
 \section{Conditions for Causal Inference}
+
+\begin{itemize}
+    \item Formally present each condition.
+    \item Argue that it holds.
+    \item Common Support - using propensity scores.
+    \item Ignorability - using literature that presents facts and experiments that back up our assessment that we have the most relevant features.
+    \item SUTVA.
+    \item Consistency.
+\end{itemize}
 
 \section{Causal Analysis Methodology}
 
+\begin{itemize}
+    \item Present the relevant measures (ATE, etc).
+    \item Present the methods we use for calculating the measures.
+    \item Implementation details (a lot of them).
+    \item Bootstrap.
+\end{itemize}
+
 \section{Results}
+
+\begin{itemize}
+    \item One graph to compare all of the results from the methods (box plots).
+    \item Discussion.
+    \item Analyze correlation / dominant features.
+\end{itemize}
 
 \section{Discussion}
 
-\bibliography{references}
+\begin{itemize}
+    \item Conclusions
+    \item Possible weaknesses.
+    \item Avenues for future work.
+\end{itemize}
+
+\bibliography{references.bib}
+
+\appendix
+
+\section{Further Review of the Data}
 
 \end{document}
