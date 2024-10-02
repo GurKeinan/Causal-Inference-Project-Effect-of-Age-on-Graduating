@@ -8,6 +8,8 @@
 \usepackage{times}  % DO NOT CHANGE THIS
 \usepackage{helvet}  % DO NOT CHANGE THIS
 
+\usepackage{graphicx}
+
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
 \usepackage{hyperref}
@@ -70,26 +72,11 @@ The data was created by joining 3 primary data sources:
 
 \paragraph{Pruning categorical outliers} Even after performing the previous step, some variables still contained rare values. After careful consideration and visual inspections, we decided to prune some of the rare values to ease the analysis. Among the rest, the pruning resulted in only subjects with Portuguese nationality, \gur{detail here more}.
 
+\paragraph{Scaling numerical variables} \todo{Add this step.}
 
-% Preprocessing:
-% \begin{itemize}
-%     \item Removing post-treatment variables with explanation.
-%     \item Removing unnecessary variables for easier analysis.
-%     \item Scaling variables? 
-%     \item One-hot vectors for categorical variables?
-%     \item Sub categorizing some variables for easier analysis. 
-% \end{itemize}
+\paragraph{One-hot encoding} \todo{Add this step.}
 
 \section{Assumptions for Causal Inference}
-
-% \begin{itemize}
-%     \item Formally present each condition.
-%     \item Argue that it holds.
-%     \item Common Support - using propensity scores.
-%     \item Ignorability - using literature that presents facts and experiments that back up our assessment that we have the most relevant features.
-%     \item SUTVA.
-%     \item Consistency.
-% \end{itemize}
 
 In this section, we formally present and discuss four assumptions regarding the nature of our data. Combined, those assumptions guarantee the trustworthiness of an observational causal experiment's results.
 
@@ -105,26 +92,82 @@ The consistency assumption states that an individual's potential outcome under h
 
 Our data originated from credible and regulated sources using careful and documented manipulations. Thus, we argue that the consistency assumption holds in our data.
 
-\subsection{Ignorability – no unmeasured confounders}
+\subsection{Ignorability - no unmeasured confounders}
 
 The ignorability assumption states that the treatment assignment $T$ is independent of the potential outcomes $Y_0, Y_1$ given the observed covariates $X$, i.e., $Y_0, Y_1 \perp T \ | \ X$. 
 
-This assumption can always be violated since it is impossible to effectively record or scrape all relevant data for the experiment. \gur{Literature!}
+\gur{'Unverifiable assumption.' https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10666970/}
+
+\gur{'We close with a reminder to readers of the optimistic view of the complexity of data and how correlation between observed variables and unmeasured ones can reduce any bias associated with unmeasured information.' https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10666970/}
+
+This assumption can always be violated since it is impossible to effectively record or scrape all relevant data for the experiment. 
 
 \subsection{Common support (overlap)}
 
 The common support assumption states that each unit has a non-zero probability of receiving each treatment level, i.e., $\forall x \in X, P(T=1|X=x) > 0$ and $P(T=0|X=x) > 0$.
 
-We empirically validate this assumption using propensity scores.
+We empirically validate this assumption using propensity scores. We trained a logistic regression model to predict the treatment assignment based on the covariates, and used the predicted probabilities as the propensity scores. We then plotted the propensity scores of the treated and control groups to ensure that there is a significant overlap between the two groups. The results are presented in Figure \ref{fig:common_support}. The minimal predicted propensity score of the treated group is $0.0053$, and of the control group is $0.0018$. Therefore, we can conclude that the common support assumption holds in our data.
+
+\begin{figure}
+    \centering
+    \caption{Common support of the propensity scores}
+    \label{fig:common_support}
+    \includegraphics[width = 0.8\textwidth]{images/common support propensity graph.png}
+\end{figure}
+
+
 
 \section{Causal Analysis Methodology}
 
-\begin{itemize}
-    \item Present the relevant measures (ATE, etc).
-    \item Present the methods we use for calculating the measures.
-    \item Implementation details (a lot of them).
-    \item Bootstrap.
-\end{itemize}
+After validating the assumptions for causal inference, we proceed to describe the methodology we use to perform the causal analysis. This methodology is based on the potential outcomes framework and the assumptions we discussed in the previous section. We now present the relevant measures and the methods we use to estimate them and their confidence intervals.
+
+\subsection{Measures}
+
+In order to quantify the causal effect of the treatment on the outcome, one usually tries to estimate the Average Treatment Effect (ATE). However, in some cases, it is more informative to estimate the Average Treatment Effect on the Treated (ATT) or the Average Treatment Effect on the Control (ATC). We now formally define these measures.
+
+\paragraph{Average Treatment Effect (ATE)} The Average Treatment Effect is the difference between the expected outcome under treatment and the expected outcome under control. Formally, it is defined as $ATE = E[Y_1 - Y_0]$.
+
+\paragraph{Average Treatment Effect on the Treated (ATT)} The Average Treatment Effect on the Treated is the difference between the expected outcome under treatment and the expected outcome under control, but only for the treated units. Formally, it is defined as $ATT = E[Y_1 - Y_0 | T = 1]$. 
+
+\paragraph{Average Treatment Effect on the Control (ATC)} The Average Treatment Effect on the Control is the difference between the expected outcome under treatment and the expected outcome under control, but only for the control units. Formally, it is defined as $ATC = E[Y_1 - Y_0 | T = 0]$. 
+
+Each of the three measures provides a different perspective on the causal effect of the treatment. The ATE measures the average effect of the treatment on the entire population, while the ATT and ATC measures provide insights into the effect of the treatment on the treated and control units, respectively. The ATT and ATC measures are particularly useful when the treatment assignment is not controlled (not random), as is the case in observational studies.
+
+\subsection{Methods}
+
+\gur{Maybe covariates adjustment, IPW, Doubly Robust, Matching, one more sophisticated method. (the first 3 have nice rhythm together).}
+
+We now present the methods we use to estimate the causal effect of the treatment on the outcome. We also detail about the implementation of these methods and the relevant hyperparameters.
+
+\subsubsection{Doubly Robust Estimation}
+
+Doubly Robust Estimation is a method that combines the outcome regression and propensity score weighting methods to estimate the causal effect of the treatment. Formally, given the observed outcome $Y$, the treatment assignment $T$, and the covariates $X$, the Doubly Robust Estimator is defined as:
+
+\gur{Add the formula here.}
+
+Where $\hat{\mu}_1$ and $\hat{\mu}_0$ are the outcome regression models for the treated and control units, respectively, and $\hat{e}(X_i)$ is the estimated propensity score model. The Doubly Robust Estimator is not biased if either the outcome regression model or the propensity score model is correctly specified, making it a robust method for estimating causal effect.
+
+\paragraph{Implementation Details} \todo{Details about the implementation of the Doubly Robust Estimator.}
+
+
+\subsubsection{Propensity Score Matching}
+
+Propensity Score Matching is a method that matches treated and control units based on their propensity scores, which are the estimated probabilities of receiving the treatment given the covariates. The matching process aims to create groups of treated and control units that are similar in terms of their propensity scores, thus creating a balanced dataset. After matching the units, the causal effect of the treatment can be estimated by averaging the differences in outcomes between the matched treated and control units.
+
+\paragraph{Implementation Details} \todo{Details about the implementation of Propensity Score Matching.}
+
+
+
+
+
+\subsection{Bootstrap Confidence Intervals}
+
+
+
+
+
+
+
 
 \section{Results}
 
