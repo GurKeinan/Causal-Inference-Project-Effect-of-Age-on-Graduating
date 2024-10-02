@@ -33,10 +33,12 @@
 \maketitle
 
 \begin{abstract}
-    Many adolescents worldwide have wondered when they should start their journey in higher education. The writers of this project themselves had decided long ago to join the 'Atuda' program, which means starting university at the relatively young age of eighteen. Thus, it is natural to wonder - does the student's age at the start of learning at the university affect the success of the student? An answer to this question can drastically change the landscape of the campuses worldwide and the grades of those studying there. In this causal inference project, we aim to explore precisely that. Specifically, we investigate the following causal question: \emph{What is the causal effect of being an adult student (over 21) on the probability of completing academic courses?} Throughout this project, we present and explore the data we use to tackle this question and determine its suitability for causal analysis tasks, formally present the methods we use to answer the research question, present and discuss the analysis results, and conclude the project. One can find all of the resources used in the project in this \href{https://github.com/GurKeinan/Causal-Inference-Project-Effect-of-Age-on-Graduating}{GitHub repository}.
+    Many adolescents worldwide have wondered when they should start their journey in higher education. The writers of this project themselves had decided long ago to join the 'Atuda' program, which means starting university at the relatively young age of eighteen. Thus, it is natural to wonder - does the student's age at the start of learning at the university affect the success of the student? An answer to this question can drastically change the landscape of the campuses worldwide and the grades of those studying there. In this Causal Inference project, we aim to explore precisely that. Specifically, we investigate the following causal question: \emph{What is the causal effect of being an adult student (over 21) on the probability of completing academic courses?} Throughout this project, we present and explore the data we use to tackle this question and determine its suitability for causal analysis tasks, formally present the methods we use to answer the research question, present and discuss the analysis results, and conclude the project. One can find all of the resources used in the project in this \href{https://github.com/GurKeinan/Causal-Inference-Project-Effect-of-Age-on-Graduating}{GitHub repository}.
 \end{abstract}
 
-\textbf{Note on AI Usage:} We did not use generative AI to write this report. We only used ChatGPT, Claude, and Grammarly for revisions and corrections of our own writing.
+\gur{It seems that target is the variable of "completed his studies", and course is not a single "calculus 1" but more like a degree. It is important, we should revise our work based on it.}
+
+\textbf{Note on AI Usage:} We did not use generative AI to write this report. We only used ChatGPT, Claude, and Grammarly to revise and correct our writing.
 
 \section{Data Review and Preprocessing}
 
@@ -88,25 +90,23 @@ The SUTVA assumption states that the potential outcomes of each unit are not aff
 
 \subsection{Consistency}
 
-The consistency assumption states that an individual's potential outcome under his or her observed exposure history is the outcome that will actually be observed for that person. Put formally, for a unit that receives treatment $T$, we observe the corresponding potential outcome $Y = TY_1 + (1-T)Y_0$. This assumption can be violated when the individual's history is misreported \gur{(e.g., "Have you ever tried LSD?)}.
+The Consistency assumption states that an individual's potential outcome under his or her observed exposure history is the outcome that will actually be observed for that person. Put formally, for a unit that receives treatment $T$, we observe the corresponding potential outcome $Y = TY_1 + (1-T)Y_0$. This assumption can be violated when the individual's history is misreported \gur{(e.g., "Have you ever tried LSD?)}.
 
 Our data originated from credible and regulated sources using careful and documented manipulations. Thus, we argue that the consistency assumption holds in our data.
 
-\subsection{Ignorability - no unmeasured confounders}
+\subsection{Ignorability - No Unmeasured Confounders}
 
-The ignorability assumption states that the treatment assignment $T$ is independent of the potential outcomes $Y_0, Y_1$ given the observed covariates $X$, i.e., $Y_0, Y_1 \perp T \ | \ X$. 
+The Ignorability assumption states that the treatment assignment $T$ is independent of the potential outcomes $Y_0, Y_1$ given the observed covariates $X$, i.e., $Y_0, Y_1 \perp T \ | \ X$. 
 
 \gur{'Unverifiable assumption.' https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10666970/}
 
 \gur{'We close with a reminder to readers of the optimistic view of the complexity of data and how correlation between observed variables and unmeasured ones can reduce any bias associated with unmeasured information.' https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10666970/}
 
-This assumption can always be violated since it is impossible to effectively record or scrape all relevant data for the experiment. 
+\subsection{Common Support (Overlap)}
 
-\subsection{Common support (overlap)}
+The Common Support assumption states that each unit has a non-zero probability of receiving each treatment level, i.e., $\forall x \in X, P(T=1|X=x) > 0$ and $P(T=0|X=x) > 0$.
 
-The common support assumption states that each unit has a non-zero probability of receiving each treatment level, i.e., $\forall x \in X, P(T=1|X=x) > 0$ and $P(T=0|X=x) > 0$.
-
-We empirically validate this assumption using propensity scores. We trained a logistic regression model to predict the treatment assignment based on the covariates, and used the predicted probabilities as the propensity scores. We then plotted the propensity scores of the treated and control groups to ensure that there is a significant overlap between the two groups. The results are presented in Figure \ref{fig:common_support}. The lowest predicted propensity score of the treated group is $0.0053$, and of the control group is $0.0018$. Therefore, we conclude that the common support assumption holds in our data.
+We empirically validate this assumption using propensity scores. We trained a logistic regression model to predict the treatment assignment based on the covariates, and used the predicted probabilities as the propensity scores. We then plotted the propensity scores of the treated and control groups to ensure that there is a significant overlap between the two groups. The results are presented in Figure \ref{fig:common_support}. The lowest predicted propensity score of the treated group is $0.0209$, and the control group's is $0.009$. Therefore, we conclude that the common support assumption holds in our data.
 
 \begin{figure}
     \centering
@@ -119,11 +119,11 @@ We empirically validate this assumption using propensity scores. We trained a lo
 
 \section{Causal Analysis Methodology}
 
-After validating the assumptions for causal inference, we proceed to describe the methodology we use to perform the causal analysis. This methodology is based on the potential outcomes framework and the assumptions we discussed in the previous section. We now present the relevant measures and the methods we use to estimate them and their confidence intervals.
+After validating the assumptions for causal inference, we describe the methodology used to perform the causal analysis. We present the relevant measures of causal effects and the methods we use to estimate them.
 
 \subsection{Measures}
 
-In order to quantify the causal effect of the treatment on the outcome, one usually tries to estimate the Average Treatment Effect (ATE). However, in some cases, it is more informative to estimate the Average Treatment Effect on the Treated (ATT) or the Average Treatment Effect on the Control (ATC). We now formally define these measures.
+To quantify the causal effect of the treatment on the outcome, one usually tries to estimate the Average Treatment Effect (ATE). However, in some cases, estimating the Average Treatment Effect on the Treated (ATT) or the Average Treatment Effect on the Control (ATC) is more informative. We formally present those measures below.
 
 \paragraph{Average Treatment Effect (ATE)} The Average Treatment Effect is the difference between the expected outcome under treatment and the expected outcome under control. Formally, it is defined as $ATE = E[Y_1 - Y_0]$.
 
@@ -131,37 +131,42 @@ In order to quantify the causal effect of the treatment on the outcome, one usua
 
 \paragraph{Average Treatment Effect on the Control (ATC)} The Average Treatment Effect on the Control is the difference between the expected outcome under treatment and the expected outcome under control, but only for the control units. Formally, it is defined as $ATC = E[Y_1 - Y_0 | T = 0]$. 
 
-Each of the three measures provides a different perspective on the causal effect of the treatment. The ATE measures the average effect of the treatment on the entire population, while the ATT and ATC measures provide insights into the effect of the treatment on the treated and control units, respectively. The ATT and ATC measures are particularly useful when the treatment assignment is not controlled (not random), as is the case in observational studies.
+Each of the three measures provides a different perspective on the causal effect of the treatment. The ATE measures the average effect of the treatment on the entire population. In contrast, the ATT and ATC measures provide insights into the effect of the treatment on the treated and control units, respectively. The ATT and ATC measures are notably helpful when the treatment assignment is not controlled (not random), as in observational studies.
+
+\paragraph{Bootstrap-based confidence intervals} \todo{Complete this.}
 
 \subsection{Methods}
 
-\gur{Maybe covariates adjustment, IPW, Doubly Robust, Matching, one more sophisticated method. (the first 3 have nice rhythm together).}
+\gur{Covariate adjustment, IPW, propensity score matching, doubly robust}
 
-We now present the methods we use to estimate the causal effect of the treatment on the outcome. We also detail about the implementation of these methods and the relevant hyperparameters.
+\gur{Estimate ATE, ATT and derive ATC through the mathematical reltaion}
+
+\gur{For Covariate adjustment, calculate ATE as usual, calculate ATT by only iterating over the treated group and ATC by only terating over the control}
+
+\gur{For IPW, use TA5 and derive ATC through the mathematical relation between ATE, ATT and ATC}
+
+\gur{For propensity score matching, calculate ATT and ATC by matching treated to control and control to treated, respectively, and derive ATE through the mathematical relation between ATE, ATT and ATC}
+
+\gur{For the doubly robust, use the paper I put in the references and cite it for all the three.}
+
+We now present the methods we use to estimate the causal effect of the treatment on the outcome. We also detail the implementation of these methods and the relevant hyperparameters.
 
 \subsubsection{Doubly Robust Estimation}
 
-Doubly Robust Estimation is a method that combines the outcome regression and propensity score weighting methods to estimate the causal effect of the treatment. Formally, given the observed outcome $Y$, the treatment assignment $T$, and the covariates $X$, the Doubly Robust Estimator is defined as:
+Doubly Robust Estimation is a method that fortuitously combines outcome regression and propensity score weighting methods to estimate the causal effect of the treatment. Formally, given the observed outcome $Y$, the treatment assignment $T$, and the covariates $X$, the Doubly Robust Estimator is defined as:
 
 \gur{Add the formula here.}
 
-Where $\hat{\mu}_1$ and $\hat{\mu}_0$ are the outcome regression models for the treated and control units, respectively, and $\hat{e}(X_i)$ is the estimated propensity score model. The Doubly Robust Estimator is not biased if either the outcome regression model or the propensity score model is correctly specified, making it a robust method for estimating causal effect.
+The Doubly Robust Estimator is consistent (not biased) if either the outcome regression model or the propensity score model is correctly specified, making it a robust method for estimating causal effects.
 
 \paragraph{Implementation Details} \todo{Details about the implementation of the Doubly Robust Estimator.}
 
 
 \subsubsection{Propensity Score Matching}
 
-Propensity Score Matching is a method that matches treated and control units based on their propensity scores, which are the estimated probabilities of receiving the treatment given the covariates. The matching process aims to create groups of treated and control units that are similar in terms of their propensity scores, thus creating a balanced dataset. After matching the units, the causal effect of the treatment can be estimated by averaging the differences in outcomes between the matched treated and control units.
+Propensity Score Matching is a method that groups treated and control units with similar propensity scores. This method is often thought of as attempting to replicate a randomized controlled experiment, as it tries to create (in some sense) a similar balance in observed variables between the treatment and control groups. After matching the units, the causal effect of the treatment can be estimated by averaging the differences in outcomes between the matched treated and control units in each group.
 
 \paragraph{Implementation Details} \todo{Details about the implementation of Propensity Score Matching.}
-
-
-
-
-
-\subsection{Bootstrap Confidence Intervals}
-
 
 
 
