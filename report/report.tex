@@ -53,16 +53,22 @@ The data was created by joining 3 primary data sources:
     \item PORDATA (Contemporary Portugal Database) - provides macroeconomic data, including unemployment, inflation, and GDP figures.
 \end{enumerate}
 
+\gur{Division of the data to classes like in table in the paper}
+
 
 \todo{Figure star of treatment and target distributions, discussion.}
 
-\todo{Age limitation in Portugal.}
+\todo{Age limitation in Portugal. We can mention and cite the fact that Portugal is said to welcome education in all ages. This statement is commonly used regarding older people, but still.}
 
 \subsection{Data Preprocessing}
 
 \paragraph{Treatment and Target variables} Following our causal question, we introduce a new binary variable - "being over 21". This variable acts as the \emph{treatment variable} in our analysis. We omit the numerical age variable for the rest of the analysis. Additionally, as our question focuses on the probability of completing academic courses, we introduce another binary variable - "Graduated from the course" rather than the commonly used trinary variable - "graduate/  enrolled/ dropout". This variable is the \emph{target variable} in our analysis.
 
-\paragraph{Post-treatment variables} The dataset contains multiple records of the students' academic accomplishments during their first year of higher education. Although informative for 
+\paragraph{Post-treatment variables} The dataset contains multiple records of students' academic accomplishments during their first year of higher education. Although informative for machine learning models trying to predict academic dropout, these accomplishments were recorded after the treatment was determined and, therefore, cannot be safely used in the causal inference procedure. We removed such variables, 
+
+\paragraph{Clustering categorical values} The dataset is of impressive complexity and detail, as evident by the categorical variables with over 30 unique values. To perform meaningful analysis, we manually cluster similar categories into one broader category to represent them instead of simply removing the less frequent value. For example, we merged the values 'Armed Forces Professions', 'Armed Forces Officers', and 'Armed Forces Sergeants' into a single 'Armed Forces' value. We performed this procedure on five variables within the data set - the qualifications and occupations of the parents (mother and father) and the student's previous qualifications. 
+
+\paragraph{Pruning categorical outliers} Even after performing the previous step, some variables still contained rare values. After careful consideration and visual inspections, we decided to prune some of the rare values to ease the analysis. Among the rest, the pruning resulted in only subjects with Portuguese nationality, \gur{detail here more}.
 
 
 % Preprocessing:
@@ -74,16 +80,42 @@ The data was created by joining 3 primary data sources:
 %     \item Sub categorizing some variables for easier analysis. 
 % \end{itemize}
 
-\section{Conditions for Causal Inference}
+\section{Assumptions for Causal Inference}
 
-\begin{itemize}
-    \item Formally present each condition.
-    \item Argue that it holds.
-    \item Common Support - using propensity scores.
-    \item Ignorability - using literature that presents facts and experiments that back up our assessment that we have the most relevant features.
-    \item SUTVA.
-    \item Consistency.
-\end{itemize}
+% \begin{itemize}
+%     \item Formally present each condition.
+%     \item Argue that it holds.
+%     \item Common Support - using propensity scores.
+%     \item Ignorability - using literature that presents facts and experiments that back up our assessment that we have the most relevant features.
+%     \item SUTVA.
+%     \item Consistency.
+% \end{itemize}
+
+In this section, we formally present and discuss four assumptions regarding the nature of our data. Combined, those assumptions guarantee the trustworthiness of an observational causal experiment's results.
+
+\subsection{Stable Unit Treatment Value Assumption (SUTVA)}
+
+The SUTVA assumption states that the potential outcomes of each unit are not affected by the treatment assignment of any other unit. This assumption is violated when there is interference between units, i.e., when the treatment of one unit affects the potential outcomes of other units. For example, if a treatment is a vaccine that prevents the spread of a disease, then the treatment of one individual can affect the potential outcomes of other individuals, as one individual's treatment can prevent the disease from spreading to others. In this case, the SUTVA assumption is violated.
+
+\todo{In our data...}
+
+\subsection{Consistency}
+
+The consistency assumption states that an individual's potential outcome under his or her observed exposure history is the outcome that will actually be observed for that person. Put formally, for a unit that receives treatment $T$, we observe the corresponding potential outcome $Y = TY_1 + (1-T)Y_0$. This assumption can be violated when the individual's history is misreported \gur{(e.g., "Have you ever tried LSD?)}.
+
+Our data originated from credible and regulated sources using careful and documented manipulations. Thus, we argue that the consistency assumption holds in our data.
+
+\subsection{Ignorability – no unmeasured confounders}
+
+The ignorability assumption states that the treatment assignment $T$ is independent of the potential outcomes $Y_0, Y_1$ given the observed covariates $X$, i.e., $Y_0, Y_1 \perp T \ | \ X$. 
+
+This assumption can always be violated since it is impossible to effectively record or scrape all relevant data for the experiment. \gur{Literature!}
+
+\subsection{Common support (overlap)}
+
+The common support assumption states that each unit has a non-zero probability of receiving each treatment level, i.e., $\forall x \in X, P(T=1|X=x) > 0$ and $P(T=0|X=x) > 0$.
+
+We empirically validate this assumption using propensity scores.
 
 \section{Causal Analysis Methodology}
 
@@ -113,7 +145,5 @@ The data was created by joining 3 primary data sources:
 \bibliography{references.bib}
 
 \appendix
-
-\section{Further Review of the Data}
 
 \end{document}
