@@ -4,3 +4,5 @@ Project proposal/.DS_Store
 report/report.synctex.gz
 report/report.pdf
 .vscode/settings.json
+*.xml
+*.iml
