@@ -106,7 +106,7 @@ This assumption can always be violated since it is impossible to effectively rec
 
 The common support assumption states that each unit has a non-zero probability of receiving each treatment level, i.e., $\forall x \in X, P(T=1|X=x) > 0$ and $P(T=0|X=x) > 0$.
 
-We empirically validate this assumption using propensity scores. We trained a logistic regression model to predict the treatment assignment based on the covariates, and used the predicted probabilities as the propensity scores. We then plotted the propensity scores of the treated and control groups to ensure that there is a significant overlap between the two groups. The results are presented in Figure \ref{fig:common_support}. The minimal predicted propensity score of the treated group is $0.0053$, and of the control group is $0.0018$. Therefore, we can conclude that the common support assumption holds in our data.
+We empirically validate this assumption using propensity scores. We trained a logistic regression model to predict the treatment assignment based on the covariates, and used the predicted probabilities as the propensity scores. We then plotted the propensity scores of the treated and control groups to ensure that there is a significant overlap between the two groups. The results are presented in Figure \ref{fig:common_support}. The lowest predicted propensity score of the treated group is $0.0053$, and of the control group is $0.0018$. Therefore, we conclude that the common support assumption holds in our data.
 
 \begin{figure}
     \centering
