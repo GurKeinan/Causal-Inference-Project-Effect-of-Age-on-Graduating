@@ -200,6 +200,9 @@ df = df.drop(columns=['Debtor', 'Tuition fees up to date'])
 top_4_prev_qual = df[PREVIOUS_QUALIFICATION_STRING].value_counts().nlargest(4).index
 df = df[df[PREVIOUS_QUALIFICATION_STRING].isin(top_4_prev_qual)]
 
+# in the target variable, change every 'dropout' or 'enrolled' to 0 and 'Graduate' to 1
+df['Target'] = df['Target'].replace({'Dropout': 0, 'Enrolled': 0, 'Graduate': 1})
+
 # Save the processed data to a new CSV file
 df.to_csv('data/processed_data.csv', index=False)
 
