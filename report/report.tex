@@ -23,7 +23,7 @@
 \newcommand{\yarden}[1]{{\color{magenta}{Yarden: #1}}}
 
 
-\title{The Effect of Age of Enrollment on the Probability of Graduating in Courses}
+\title{The Effect of Age of Enrollment on the Probability of Graduating from Academic Programs}
 \author{Gur Keinan 213635899 \and Yarden Adi 212585848}
 \date{October 30, 2024}
 
@@ -33,10 +33,8 @@
 \maketitle
 
 \begin{abstract}
-    Many adolescents worldwide have wondered when they should start their journey in higher education. The writers of this project themselves had decided long ago to join the 'Atuda' program, which means starting university at the relatively young age of eighteen. Thus, it is natural to wonder - does the student's age at the start of learning at the university affect the success of the student? An answer to this question can drastically change the landscape of the campuses worldwide and the grades of those studying there. In this Causal Inference project, we aim to explore precisely that. Specifically, we investigate the following causal question: \emph{What is the causal effect of being an adult student (over 21) on the probability of completing academic courses?} Throughout this project, we present and explore the data we use to tackle this question and determine its suitability for causal analysis tasks, formally present the methods we use to answer the research question, present and discuss the analysis results, and conclude the project. One can find all of the resources used in the project in this \href{https://github.com/GurKeinan/Causal-Inference-Project-Effect-of-Age-on-Graduating}{GitHub repository}.
+    Many adolescents worldwide have wondered when they should start their journey in higher education. The writers of this project themselves had decided long ago to join the 'Atuda' program, which means starting university at the relatively young age of eighteen. Thus, it is natural to wonder - does the student's age at the start of learning at the university affect the success of the student? An answer to this question can drastically change the landscape of the campuses worldwide and the grades of those studying there. In this Causal Inference project, we aim to explore precisely that. Specifically, we investigate the following causal question: \emph{What is the causal effect of being an adult student (over 21) on the probability of graduating from an academic program?} Throughout this project, we present and explore the data we use to tackle this question and determine its suitability for causal analysis tasks, formally present the methods we use to answer the research question, present and discuss the analysis results, and conclude the project. One can find all of the resources used in the project in this \href{https://github.com/GurKeinan/Causal-Inference-Project-Effect-of-Age-on-Graduating}{GitHub repository}.
 \end{abstract}
-
-\gur{It seems that target is the variable of "completed his studies", and course is not a single "calculus 1" but more like a degree. It is important, we should revise our work based on it.}
 
 \textbf{Note on AI Usage:} We did not use generative AI to write this report. We only used ChatGPT, Claude, and Grammarly to revise and correct our writing.
 
@@ -48,7 +46,7 @@
 
 The data used in our project originated from research done in Portugal by the \href{https://www.ipportalegre.pt/pt/}{Polytechnic Institute of Portalegre} (\gur{Equivalent to college}), as an attempt to provide information to the tutoring team about the risk of students' dropout and failure \citep{data7110146}. Commonly, it is used to build machine learning models for predicting academic performance and dropout (see relevant \href{https://www.kaggle.com/datasets/ankanhore545/dropout-or-academic-success/data}{Kaggle competitions in this subject}).
 
-The data contains information about students' pre-academic background, age, academic performance, social and economic status, and other relevant variables. It consists of 4424 records and 37 variables \todo{number of categorical and numerical}, including the enrollment age. The dataset includes a trinary outcome variable indicating whether a student dropped out, graduated, or is still enrolled in the course. 
+The data contains information about students' pre-academic background, age, academic performance, social and economic status, and other relevant variables. It consists of 4424 records and 37 variables \todo{number of categorical and numerical}, including the enrollment age. The dataset includes a trinary outcome variable indicating whether a student dropped out, graduated, or is still enrolled in the academic program. 
 
 The data was created by joining 3 primary data sources: 
 \begin{enumerate}
@@ -66,17 +64,19 @@ The data was created by joining 3 primary data sources:
 
 \subsection{Data Preprocessing}
 
-\paragraph{Treatment and Target variables} Following our causal question, we introduce a new binary variable - "being over 21". This variable acts as the \emph{treatment variable} in our analysis. We omit the numerical age variable for the rest of the analysis. Additionally, as our question focuses on the probability of completing academic courses, we introduce another binary variable - "Graduated from the course" rather than the commonly used trinary variable - "graduate/  enrolled/ dropout". This variable is the \emph{target variable} in our analysis.
+\paragraph{Treatment and Target variables} Following our causal question, we introduce a new binary variable - "being over 21". This variable acts as the \emph{treatment variable} in our analysis. We omit the numerical age variable for the rest of the analysis. Additionally, as our question focuses on the probability of graduating from an academic program, we introduce another binary variable - "Graduated from an academic program" rather than the commonly used trinary variable - "graduate/  enrolled/ dropout". This variable is the \emph{target variable} in our analysis.
 
-\paragraph{Post-treatment variables} The dataset contains multiple records of students' academic accomplishments during their first year of higher education. Although informative for machine learning models trying to predict academic dropout, these accomplishments were recorded after the treatment was determined and, therefore, cannot be safely used in the causal inference procedure. We removed such variables, 
+\paragraph{Post-treatment variables} The dataset contains multiple records of students' academic accomplishments during their first year of higher education. \yarden{I would write \textbf{despite being informative} instead of \textbf{although informative}} Although informative for machine learning models trying to predict academic dropout, these accomplishments were recorded after the treatment was determined and, therefore, cannot be safely used in the causal inference procedure. We removed such variables, \todo{Complete and add to that list the debtor and payments variables} 
 
 \paragraph{Clustering categorical values} The dataset is of impressive complexity and detail, as evident by the categorical variables with over 30 unique values. To perform meaningful analysis, we manually cluster similar categories into one broader category to represent them instead of simply removing the less frequent value. For example, we merged the values 'Armed Forces Professions', 'Armed Forces Officers', and 'Armed Forces Sergeants' into a single 'Armed Forces' value. We performed this procedure on five variables within the data set - the qualifications and occupations of the parents (mother and father) and the student's previous qualifications. 
 
-\paragraph{Pruning categorical outliers} Even after performing the previous step, some variables still contained rare values. After careful consideration and visual inspections, we decided to prune some of the rare values to ease the analysis. Among the rest, the pruning resulted in only subjects with Portuguese nationality, \gur{detail here more}.
+\paragraph{Pruning categorical outliers} Even after performing the previous step, some variables still contained rare values. After careful consideration and visual inspections, we decided to prune some of the rare values to ease the analysis. Among the rest, the pruning resulted in only subjects with Portuguese nationality, \gur{detail here more, add to it the removal of some variables, look in the code}
 
 \paragraph{Scaling numerical variables} \todo{Add this step.}
 
 \paragraph{One-hot encoding} \todo{Add this step.}
+
+\todo{After }
 
 \section{Assumptions for Causal Inference}
 
@@ -100,7 +100,7 @@ The Ignorability assumption states that the treatment assignment $T$ is independ
 
 \gur{'Unverifiable assumption.' https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10666970/}
 
-\gur{'We close with a reminder to readers of the optimistic view of the complexity of data and how correlation between observed variables and unmeasured ones can reduce any bias associated with unmeasured information.' https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10666970/}
+\gur{'We close with a reminder to readers of the optimistic view of the complexity of data and how the correlation between observed variables and unmeasured ones can reduce any bias associated with unmeasured information.' https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10666970/}
 
 \subsection{Common Support (Overlap)}
 
@@ -139,17 +139,30 @@ Each of the three measures provides a different perspective on the causal effect
 
 \gur{Covariate adjustment, IPW, propensity score matching, doubly robust}
 
-\gur{Estimate ATE, ATT and derive ATC through the mathematical reltaion}
+\gur{Estimate ATE, ATT, and derive ATC through the mathematical relation}
 
-\gur{For Covariate adjustment, calculate ATE as usual, calculate ATT by only iterating over the treated group and ATC by only terating over the control}
+\gur{For Covariate adjustment, calculate ATE as usual, calculate ATT by only iterating over the treated group and ATC by only iterating over the control}
 
 \gur{For IPW, use TA5 and derive ATC through the mathematical relation between ATE, ATT and ATC}
 
 \gur{For propensity score matching, calculate ATT and ATC by matching treated to control and control to treated, respectively, and derive ATE through the mathematical relation between ATE, ATT and ATC}
 
-\gur{For the doubly robust, use the paper I put in the references and cite it for all the three.}
+\gur{For the doubly robust, use the paper I put in the references and cite it for all three.}
 
 We now present the methods we use to estimate the causal effect of the treatment on the outcome. We also detail the implementation of these methods and the relevant hyperparameters.
+
+
+\subsection{Covariates Adjustment}
+
+
+\subsection{Inverse Probability Weighting}
+
+\subsubsection{Propensity Score Matching}
+
+Propensity Score Matching is a method that groups treated and control units with similar propensity scores. This method is often thought of as attempting to replicate a randomized controlled experiment, as it tries to create (in some sense) a similar balance in observed variables between the treatment and control groups. After matching the units, the causal effect of the treatment can be estimated by averaging the differences in outcomes between the matched treated and control units in each group.
+
+\paragraph{Implementation Details} \todo{Details about the implementation of Propensity Score Matching.}
+
 
 \subsubsection{Doubly Robust Estimation}
 
@@ -160,13 +173,6 @@ Doubly Robust Estimation is a method that fortuitously combines outcome regressi
 The Doubly Robust Estimator is consistent (not biased) if either the outcome regression model or the propensity score model is correctly specified, making it a robust method for estimating causal effects.
 
 \paragraph{Implementation Details} \todo{Details about the implementation of the Doubly Robust Estimator.}
-
-
-\subsubsection{Propensity Score Matching}
-
-Propensity Score Matching is a method that groups treated and control units with similar propensity scores. This method is often thought of as attempting to replicate a randomized controlled experiment, as it tries to create (in some sense) a similar balance in observed variables between the treatment and control groups. After matching the units, the causal effect of the treatment can be estimated by averaging the differences in outcomes between the matched treated and control units in each group.
-
-\paragraph{Implementation Details} \todo{Details about the implementation of Propensity Score Matching.}
 
 
 
