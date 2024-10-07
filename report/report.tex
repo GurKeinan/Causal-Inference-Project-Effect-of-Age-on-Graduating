@@ -36,6 +36,8 @@
     Many adolescents worldwide have wondered when they should start their journey in higher education. The writers of this project themselves had decided long ago to join the 'Atuda' program, which means starting university at the relatively young age of eighteen. Thus, it is natural to wonder - does the student's age at the start of learning at the university affect the success of the student? An answer to this question can drastically change the landscape of the campuses worldwide and the grades of those studying there. In this Causal Inference project, we aim to explore precisely that. Specifically, we investigate the following causal question: \emph{What is the causal effect of being an adult student (over 21) on the probability of graduating from an academic program?} Throughout this project, we present and explore the data we use to tackle this question and determine its suitability for causal analysis tasks, formally present the methods we use to answer the research question, present and discuss the analysis results, and conclude the project. One can find all of the resources used in the project in this \href{https://github.com/GurKeinan/Causal-Inference-Project-Effect-of-Age-on-Graduating}{GitHub repository}.
 \end{abstract}
 
+\gur{changing our question to 'What is the causal effect of enrolling as an adult student (over 21) on the probability of graduating from an academic program?}
+
 \textbf{Note on AI Usage:} We did not use generative AI to write this report. We only used ChatGPT, Claude, and Grammarly to revise and correct our writing.
 
 \section{Data Review and Preprocessing}
@@ -57,26 +59,30 @@ The data was created by joining 3 primary data sources:
 
 \gur{Division of the data to classes like in table in the paper}
 
-
-\todo{Figure star of treatment and target distributions, discussion.}
-
-\todo{Age limitation in Portugal. We can mention and cite the fact that Portugal is said to welcome education in all ages. This statement is commonly used regarding older people, but still.}
+\todo{Age limitation in Portugal. We can mention and cite that Portugal is said to welcome education in all ages. This statement is commonly used regarding older people, but still.}
 
 \subsection{Data Preprocessing}
 
-\paragraph{Treatment and Target variables} Following our causal question, we introduce a new binary variable - "being over 21". This variable acts as the \emph{treatment variable} in our analysis. We omit the numerical age variable for the rest of the analysis. Additionally, as our question focuses on the probability of graduating from an academic program, we introduce another binary variable - "Graduated from an academic program" rather than the commonly used trinary variable - "graduate/  enrolled/ dropout". This variable is the \emph{target variable} in our analysis.
+\paragraph{Treatment and Target variables} Following our causal question, we introduce a new binary variable - "being over 21". This variable acts as the \emph{treatment variable} in our analysis. We omit the numerical age variable for the rest of the analysis. Additionally, as our question focuses on the probability of graduating from an academic program, we introduce another binary variable - "Graduated from an academic program" rather than the commonly used trinary variable - "graduate/  enrolled/ dropout". This variable is the \emph{target variable} in our analysis. The distributions of the target and treatment variables are visually presented in Figure~\ref{fig:target_and_treatments_histograms}
 
-\paragraph{Post-treatment variables} The dataset contains multiple records of students' academic accomplishments during their first year of higher education. \yarden{I would write \textbf{despite being informative} instead of \textbf{although informative}} Although informative for machine learning models trying to predict academic dropout, these accomplishments were recorded after the treatment was determined and, therefore, cannot be safely used in the causal inference procedure. We removed such variables, \todo{Complete and add to that list the debtor and payments variables} 
+\begin{figure}
+    \centering
+    \label{fig:target_and_treatments_histograms}
+    \includegraphics[width = \textwidth]{plots/target_and_treatments_histograms.png}
+\end{figure}
+
+\paragraph{Removal of post-treatment variables} The dataset contains multiple records of students' academic accomplishments during their first year of higher education. \yarden{I would write \textbf{despite being informative} instead of \textbf{although informative}} Although informative for machine learning models trying to predict academic dropout, these accomplishments were recorded after the treatment was determined and, therefore, cannot be safely used in the causal inference procedure. We removed such variables, \todo{Complete and add to that list the debtor and payments variables} 
+
+\paragraph{Removal of post-treatment variables} The dataset contains multiple variables that had been gathered throughout the students' academic journey, e.g., academic accomplishments, debts, and payment tracking. \yarden{I would write \textbf{despite being informative} instead of \textbf{although informative}} Although informative for machine learning models trying to predict academic dropout, these accomplishments were recorded after the treatment was determined and, therefore, cannot be safely used in the causal inference procedure. We eliminated those variables to maintain the integrity of our results and prevent any post-treatment interference.
+
+% students' academic accomplishments during their first year of higher education. \yarden{I would write \textbf{despite being informative} instead of \textbf{although informative}} Although informative for machine learning models trying to predict academic dropout, these accomplishments were recorded after the treatment was determined and, therefore, cannot be safely used in the causal inference procedure. We removed such variables, \todo{Complete and add to that list the debtor and payments variables} 
 
 \paragraph{Clustering categorical values} The dataset is of impressive complexity and detail, as evident by the categorical variables with over 30 unique values. To perform meaningful analysis, we manually cluster similar categories into one broader category to represent them instead of simply removing the less frequent value. For example, we merged the values 'Armed Forces Professions', 'Armed Forces Officers', and 'Armed Forces Sergeants' into a single 'Armed Forces' value. We performed this procedure on five variables within the data set - the qualifications and occupations of the parents (mother and father) and the student's previous qualifications. 
 
-\paragraph{Pruning categorical outliers} Even after performing the previous step, some variables still contained rare values. After careful consideration and visual inspections, we decided to prune some of the rare values to ease the analysis. Among the rest, the pruning resulted in only subjects with Portuguese nationality, \gur{detail here more, add to it the removal of some variables, look in the code}
+\paragraph{Pruning categorical outliers} Even after performing the previous step, some variables still contained rare values. After careful consideration and visual inspections, we decided to prune some of the rare values to ease the analysis. The pruning resulted in a sample exclusively consisting of individuals with Portuguese nationality, which may limit the generalizability of this study to a broader population.
 
-\paragraph{Scaling numerical variables} \todo{Add this step.}
+\todo{scaling and encoding - I think that it can come later on in the analysis part but don't forget!}
 
-\paragraph{One-hot encoding} \todo{Add this step.}
-
-\todo{After }
 
 \section{Assumptions for Causal Inference}
 
@@ -84,15 +90,16 @@ In this section, we formally present and discuss four assumptions regarding the 
 
 \subsection{Stable Unit Treatment Value Assumption (SUTVA)}
 
-The SUTVA assumption states that the potential outcomes of each unit are not affected by the treatment assignment of any other unit. This assumption is violated when there is interference between units, i.e., when the treatment of one unit affects the potential outcomes of other units. For example, if a treatment is a vaccine that prevents the spread of a disease, then the treatment of one individual can affect the potential outcomes of other individuals, as one individual's treatment can prevent the disease from spreading to others. In this case, the SUTVA assumption is violated.
+The SUTVA assumption consists of two parts. The first one is \emph{no interference}, which requires that the potential outcomes of each unit are not affected by the treatment assignment of any other unit; the second is \emph{no hidden variations of treatment}, which forbids the existence of different forms or versions of each treatment level, which lead to different potential outcomes.
 
-\todo{In our data...}
+In our experiment, the treatment variable, 'enrolling as an adult student (over 21)' \gur{is it?}, is well-defined and has only two versions. Hence, the second part of the assumption safely holds. The assumption's first part holds if we presume one student's adulthood does not affect the probability of his fellow student graduating from the program, which is controversial. There are several aspects in which the varied spectrum of ages on the campus might affect the students' success. Such elements include but are not limited to 1) peer effects - encountering different perspectives and learning methods (that can be related to one's age) might affect one's abilities; and 2) In competitive programs, students' success may be directly affected by their peers' accomplishments. Therefore, if age is indeed related to one's academic achievements, one student's age can indeed affect another's success.
 
 \subsection{Consistency}
 
-The Consistency assumption states that an individual's potential outcome under his or her observed exposure history is the outcome that will actually be observed for that person. Put formally, for a unit that receives treatment $T$, we observe the corresponding potential outcome $Y = TY_1 + (1-T)Y_0$. This assumption can be violated when the individual's history is misreported \gur{(e.g., "Have you ever tried LSD?)}.
+The Consistency assumption states that an individual's potential outcome under his or her observed exposure history is the outcome that will actually be observed for that person. Put formally, for a unit that receives treatment $T$, we observe the corresponding potential outcome $Y = TY_1 + (1-T)Y_0$. This assumption can be violated when the individual's history is misreported. Since our data was extracted from credible and regulated sources and processed using careful and documented manipulations, we believe that the Consistency assumption likely holds in our study. 
 
-Our data originated from credible and regulated sources using careful and documented manipulations. Thus, we argue that the consistency assumption holds in our data.
+\gur{elaborate more? Data Source Reliability, Clear Treatment Definition, Outcome Measurement, Data Processing Transparency, Stable Treatment}
+
 
 \subsection{Ignorability - No Unmeasured Confounders}
 
@@ -112,7 +119,7 @@ We empirically validate this assumption using propensity scores. We trained a lo
     \centering
     \caption{Common support of the propensity scores}
     \label{fig:common_support}
-    \includegraphics[width = 0.8\textwidth]{images/common support propensity graph.png}
+    \includegraphics[width = 0.8\textwidth]{plots/common_support.png}
 \end{figure}
 
 
