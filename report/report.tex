@@ -5,8 +5,11 @@
 \usepackage{geometry}
 \geometry{margin=1in}
 
-\usepackage{times}  % DO NOT CHANGE THIS
-\usepackage{helvet}  % DO NOT CHANGE THIS
+\usepackage{times}  
+\usepackage{helvet}  
+
+\usepackage{amsfonts}
+\usepackage{bbm}
 
 \usepackage{graphicx}
 
@@ -36,7 +39,7 @@
     Many adolescents worldwide have wondered when they should start their journey in higher education. The writers of this project themselves had decided long ago to join the 'Atuda' program, which means starting university at the relatively young age of eighteen. Thus, it is natural to wonder - does the student's age at the start of learning at the university affect the success of the student? An answer to this question can drastically change the landscape of the campuses worldwide and the grades of those studying there. In this Causal Inference project, we aim to explore precisely that. Specifically, we investigate the following causal question: \emph{What is the causal effect of being an adult student (over 21) on the probability of graduating from an academic program?} Throughout this project, we present and explore the data we use to tackle this question and determine its suitability for causal analysis tasks, formally present the methods we use to answer the research question, present and discuss the analysis results, and conclude the project. One can find all of the resources used in the project in this \href{https://github.com/GurKeinan/Causal-Inference-Project-Effect-of-Age-on-Graduating}{GitHub repository}.
 \end{abstract}
 
-\gur{changing our question to 'What is the causal effect of enrolling as an adult student (over 21) on the probability of graduating from an academic program?}
+\gur{changing our question to 'What is the causal effect of enrolling as an adult student (age 21 or older) on the probability of graduating from an academic program within the allotted time?', say somewhere in the paper why we determined the target to be like this}
 
 \textbf{Note on AI Usage:} We did not use generative AI to write this report. We only used ChatGPT, Claude, and Grammarly to revise and correct our writing.
 
@@ -71,11 +74,7 @@ The data was created by joining 3 primary data sources:
     \includegraphics[width = \textwidth]{plots/target_and_treatments_histograms.png}
 \end{figure}
 
-\paragraph{Removal of post-treatment variables} The dataset contains multiple records of students' academic accomplishments during their first year of higher education. \yarden{I would write \textbf{despite being informative} instead of \textbf{although informative}} Although informative for machine learning models trying to predict academic dropout, these accomplishments were recorded after the treatment was determined and, therefore, cannot be safely used in the causal inference procedure. We removed such variables, \todo{Complete and add to that list the debtor and payments variables} 
-
 \paragraph{Removal of post-treatment variables} The dataset contains multiple variables that had been gathered throughout the students' academic journey, e.g., academic accomplishments, debts, and payment tracking. \yarden{I would write \textbf{despite being informative} instead of \textbf{although informative}} Although informative for machine learning models trying to predict academic dropout, these accomplishments were recorded after the treatment was determined and, therefore, cannot be safely used in the causal inference procedure. We eliminated those variables to maintain the integrity of our results and prevent any post-treatment interference.
-
-% students' academic accomplishments during their first year of higher education. \yarden{I would write \textbf{despite being informative} instead of \textbf{although informative}} Although informative for machine learning models trying to predict academic dropout, these accomplishments were recorded after the treatment was determined and, therefore, cannot be safely used in the causal inference procedure. We removed such variables, \todo{Complete and add to that list the debtor and payments variables} 
 
 \paragraph{Clustering categorical values} The dataset is of impressive complexity and detail, as evident by the categorical variables with over 30 unique values. To perform meaningful analysis, we manually cluster similar categories into one broader category to represent them instead of simply removing the less frequent value. For example, we merged the values 'Armed Forces Professions', 'Armed Forces Officers', and 'Armed Forces Sergeants' into a single 'Armed Forces' value. We performed this procedure on five variables within the data set - the qualifications and occupations of the parents (mother and father) and the student's previous qualifications. 
 
@@ -132,11 +131,11 @@ After validating the assumptions for causal inference, we describe the methodolo
 
 To quantify the causal effect of the treatment on the outcome, one usually tries to estimate the Average Treatment Effect (ATE). However, in some cases, estimating the Average Treatment Effect on the Treated (ATT) or the Average Treatment Effect on the Control (ATC) is more informative. We formally present those measures below.
 
-\paragraph{Average Treatment Effect (ATE)} The Average Treatment Effect is the difference between the expected outcome under treatment and the expected outcome under control. Formally, it is defined as $ATE = E[Y_1 - Y_0]$.
+\paragraph{Average Treatment Effect (ATE)} Defined as the difference between the expected outcome under treatment and the expected outcome under control. Formally, it is defined as $ATE = E[Y_1 - Y_0]$.
 
-\paragraph{Average Treatment Effect on the Treated (ATT)} The Average Treatment Effect on the Treated is the difference between the expected outcome under treatment and the expected outcome under control, but only for the treated units. Formally, it is defined as $ATT = E[Y_1 - Y_0 | T = 1]$. 
+\paragraph{Average Treatment Effect on the Treated (ATT)} Defined as the difference between the expected outcome under treatment and the expected outcome under control, but only for the treated units. Formally, it is defined as $ATT = E[Y_1 - Y_0 | T = 1]$. 
 
-\paragraph{Average Treatment Effect on the Control (ATC)} The Average Treatment Effect on the Control is the difference between the expected outcome under treatment and the expected outcome under control, but only for the control units. Formally, it is defined as $ATC = E[Y_1 - Y_0 | T = 0]$. 
+\paragraph{Average Treatment Effect on the Control (ATC)} Defined as the difference between the expected outcome under treatment and the expected outcome under control, but only for the control units. Formally, it is defined as $ATC = E[Y_1 - Y_0 | T = 0]$. 
 
 Each of the three measures provides a different perspective on the causal effect of the treatment. The ATE measures the average effect of the treatment on the entire population. In contrast, the ATT and ATC measures provide insights into the effect of the treatment on the treated and control units, respectively. The ATT and ATC measures are notably helpful when the treatment assignment is not controlled (not random), as in observational studies.
 
@@ -156,22 +155,72 @@ Each of the three measures provides a different perspective on the causal effect
 
 \gur{For the doubly robust, use the paper I put in the references and cite it for all three.}
 
-We now present the methods we use to estimate the causal effect of the treatment on the outcome. We also detail the implementation of these methods and the relevant hyperparameters.
+The fundamental problem of causal inference is that directly observing causal effects is impossible. It is impossible to observe both potential outcomes of the units and compute the impact of the treatment. In the remainder of this section, we present the estimation methods we used in our analysis, explain how they are trying to handle the mentioned problem, present the assumptions each requires for truthfully estimating the causal effects, and detail the implementation of each method.
 
 
-\subsection{Covariates Adjustment}
+\subsection{Covariate Adjustment}
+
+Covariate adjustment methods use statistical models to regress the missing potential outcomes based on the observed covariates and the treatment. The regressed values are then used to estimate the average treatment effects.
+
+There are different covariate adjustment methods, where the separation between them is usually found in if and how to separate the treatment variable from the covariates while regressing the missing potential outcomes and how to use the regressed values for the average effect estimation. We used the methods \emph{S-Learner} and \emph{T-Learner} for our analysis.
+
+\gur{Theoretical guarantees?}
+
+\paragraph{S-Learner} Addresses the treatment variable $T$ as one of the covariates. First, one must learn a statistical model for predicting the conditional average treatment effect (CATE) as a function of the covariates $X$ and the treatment $T$ - $\hat{\mu}(X, T) = \hat{\mathbb{E}}[Y^{obs} | X, T]$. Any ML method can be used for this purpose, but importantly, the whole population is used to learn the model. Then, use the learned model to estimate the average treatment effects as follows:
+
+\begin{itemize}
+    \item \textit{ATE:} Average the predicated causal effect on all of the population:
+    \[
+    \widehat{ATE} = \frac{1}{n} \sum_{i=1}^{n} \hat{\mu}(x_i, 1) - \hat{\mu}(x_i, 0)
+    \]
+    \item \textit{ATT:} Average the predicted causal effect on the treatment group:
+    \[
+    \widehat{ATT} = \frac{1}{\sum_{i=1}^{n} t_i} \sum \sum_{i=1}^{n} t_i \left[ \hat{\mu}(x_i, 1) - \hat{\mu}(x_i, 0) \right] 
+    \]
+    \item \textit{ATC:} Average the predicted causal effect on the control group:
+    \[
+    \widehat{ATC} = \frac{1}{\sum_{i=1}^{n} 1 - t_i} \sum \sum_{i=1}^{n} (1 - t_i) \left[ \hat{\mu}(x_i, 1) - \hat{\mu}(x_i, 0) \right]
+    \]
+\end{itemize}
+
+\paragraph{T-Learner} Uses observations in the treatment group to estimate the response under control, $\hat\mu_1(x) = \hat{\mathbb{E}}[Y^{obs} | X, 1]$. Similarly, use observations in the control group to estimate the response under treatment, $\hat\mu_0(x) = \hat{\mathbb{E}}[Y^{obs} | X, 0]$. Any machine learning method can be used to get these estimates. Calculating the average effects continues similarly to the S-Learner with $\hat \mu (X_i, T)$ replaced with $\hat \mu_T(x)$.
+
+\paragraph{Implementation Details} \todo{}
+
+\gur{Add RMSE comparison between different regression models, argue that we do that because the guarantees only work if the regression model is exact.}
+
+\subsection{Propensity-Based Methods}
+
+One of the problems with covariate adjustment methods is the sensitivity to model simplification and the sparsity of the covariates when handling high-dimensional data \citep{zhao2020propensity}. The propensity score methods of Rosenbaum and Rubin (RR) aim to address the fundamental problem by adjusting for the propensity score rather than potentially high-dimensional covariates. RR demonstrated that under the assumption of no unmeasured confounding, this is enough for unbiased estimation of causal effects and such estimation can be accomplished using simple non-parametric methods.
+
+\paragraph{Inverse Probability Weighting} Relies on building a logistic regression model to estimate the probability of the exposure observed (i.e., the propensity score) for a particular individual and using the predicted probability as a weight in subsequent analyses. Our analysis uses the Horvitz–Thompson estimator \citep{horvitz1952generalization}. Intuitively, it estimates the target variable's mean in the treatment and control groups by weighting the observations based on their "membership". One must first train a logistic regression model for predicting the propensity score $\hat e(x) = \hat P(T=1 | X=x)$. Then, use it to weigh each of the samples in the following way to receive each of the average effects:
+
+\begin{itemize}
+    \item \textit{ATE:} \todo{}
+    \[
+    \widehat{ATE} = \frac{1}{n}\sum_{i=1}^N \frac{t_i y_i}{e(x)} - \frac{1}{n}\sum_{i=1}^N \frac{(1-t_i)y_i}{1-e(x)}
+    \]
+
+    \item \textit{ATT:} \todo{}
+    \[
+    \widehat{ATT} = \frac{\sum_{i=1}^N t_i y_i}{\sum_{i=1}^N T_i} - \frac{\sum_{i=1}^N (1-t_i)y_i \cdot \frac{e(x_i)}{1-e(x_i)}}{\sum_{i=1}^N (1-t_i) \cdot \frac{e(x_i)}{1-e(x_i)}}
+    \]
+    \item \textit{ATC:} \todo{}
+    \[
+    \widehat{ATC} = \frac{\sum_{i=1}^N t_iy_i * \frac{1-e(x_i)}{e(x_i)}}{\sum_{i=1}^N t_i * \frac{1-e(x_i)}{e(x_i)}} - \frac{\sum_{i=1}^N (1-t_i)y_i}{\sum_{i=1}^N (1-T_i)}
+    \]
+\end{itemize}
 
 
-\subsection{Inverse Probability Weighting}
+\paragraph{Propensity Score Matching} Propensity Score Matching is a method that groups treated and control units with similar propensity scores. This method is often thought of as attempting to replicate a randomized controlled experiment, as it tries to create (in some sense) a similar balance in observed variables between the treatment and control groups. After matching the units, the causal effect of the treatment can be estimated by averaging the differences in outcomes between the matched treated and control units in each group.
 
-\subsubsection{Propensity Score Matching}
+\paragraph{Implementation Details} \todo{}
 
-Propensity Score Matching is a method that groups treated and control units with similar propensity scores. This method is often thought of as attempting to replicate a randomized controlled experiment, as it tries to create (in some sense) a similar balance in observed variables between the treatment and control groups. After matching the units, the causal effect of the treatment can be estimated by averaging the differences in outcomes between the matched treated and control units in each group.
-
-\paragraph{Implementation Details} \todo{Details about the implementation of Propensity Score Matching.}
+\gur{Add ROC curve of several binary classification models, argue that we do that because the guarantees only work if the propensity is exact.}
 
 
-\subsubsection{Doubly Robust Estimation}
+\subsection{Doubly-Robust Method}
+
 
 Doubly Robust Estimation is a method that fortuitously combines outcome regression and propensity score weighting methods to estimate the causal effect of the treatment. Formally, given the observed outcome $Y$, the treatment assignment $T$, and the covariates $X$, the Doubly Robust Estimator is defined as:
 
