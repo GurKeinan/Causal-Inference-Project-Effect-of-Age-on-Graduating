@@ -13,6 +13,8 @@
 
 \usepackage{graphicx}
 
+\usepackage{multirow}
+
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
 \usepackage{hyperref}
@@ -49,20 +51,22 @@
 
 \subsection{Data Review}
 
-The data used in our project originated from research done in Portugal by the \href{https://www.ipportalegre.pt/pt/}{Polytechnic Institute of Portalegre} (\gur{Equivalent to college}), as an attempt to provide information to the tutoring team about the risk of students' dropout and failure \citep{data7110146}. Commonly, it is used to build machine learning models for predicting academic performance and dropout (see relevant \href{https://www.kaggle.com/datasets/ankanhore545/dropout-or-academic-success/data}{Kaggle competitions in this subject}).
+The data used in our project originated from research done in Portugal by the \href{https://www.ipportalegre.pt/pt/}{Polytechnic Institute of Portalegre} (higher education institute that focuses on technology), as an attempt to provide information to the tutoring team about the risk of students' dropout and failure \citep{data7110146}. Commonly, it is used to build machine learning models for predicting academic performance and dropout (see relevant \href{https://www.kaggle.com/datasets/ankanhore545/dropout-or-academic-success/data}{Kaggle competitions in this subject}).
 
-The data contains information about students' pre-academic background, age, academic performance, social and economic status, and other relevant variables. It consists of 4424 records and 37 variables \todo{number of categorical and numerical}, including the enrollment age. The dataset includes a trinary outcome variable indicating whether a student dropped out, graduated, or is still enrolled in the academic program. 
+The data contains information about students' pre-academic background, age, academic performance, social and economic status, and other relevant variables. It consists of 4424 records and 37 variables, including the enrollment age. The dataset includes a trinary outcome variable indicating whether a student dropped out, graduated, or is still enrolled in the academic program. 
 
-The data was created by joining 3 primary data sources: 
+The data was created by joining three primary data sources: 
 \begin{enumerate}
     \item CNAES (National Competition for Access to Higher Education) - contains information about students' academic backgrounds, demographics, and course applications at the time of their enrollment in Portuguese higher education institutions.
     \item AMS (Academic Management System) - provides student records data, including demographic information, course enrollments, and academic performance throughout their studies.
     \item PORDATA (Contemporary Portugal Database) - provides macroeconomic data, including unemployment, inflation, and GDP figures.
 \end{enumerate}
 
-\gur{Division of the data to classes like in table in the paper}
+Traditionally, each attribute used in the dataset belongs to one of the following classes: demographic,
+socioeconomic, macroeconomic, academic data at enrollment, and academic data at the end of the first and second semesters. For a full list of the variables in the dataset and their corresponding classes, please refer to Table~\ref{table:variables list}
 
-\todo{Age limitation in Portugal. We can mention and cite that Portugal is said to welcome education in all ages. This statement is commonly used regarding older people, but still.}
+
+\todo{Age limitation in Portugal. We can mention and cite that Portugal is said to welcome education for all ages. This statement is commonly used regarding older people, but still.}
 
 \subsection{Data Preprocessing}
 
@@ -78,9 +82,11 @@ The data was created by joining 3 primary data sources:
 
 \paragraph{Clustering categorical values} The dataset is of impressive complexity and detail, as evident by the categorical variables with over 30 unique values. To perform meaningful analysis, we manually cluster similar categories into one broader category to represent them instead of simply removing the less frequent value. For example, we merged the values 'Armed Forces Professions', 'Armed Forces Officers', and 'Armed Forces Sergeants' into a single 'Armed Forces' value. We performed this procedure on five variables within the data set - the qualifications and occupations of the parents (mother and father) and the student's previous qualifications. 
 
-\paragraph{Pruning categorical outliers} Even after performing the previous step, some variables still contained rare values. After careful consideration and visual inspections, we decided to prune some of the rare values to ease the analysis. The pruning resulted in a sample exclusively consisting of individuals with Portuguese nationality, which may limit the generalizability of this study to a broader population.
+\paragraph{Pruning categorical outliers} Even after performing the previous step, some variables still contained rare values. After careful consideration and visual inspections, we decided to prune some of the rare values to ease the analysis. The pruning resulted in a sample exclusively consisting of individuals with Portuguese nationality, which may limit the generalizability of this study to a broader population. 
 
-\todo{scaling and encoding - I think that it can come later on in the analysis part but don't forget!}
+\todo{scaling and encoding - I think that it can come later on in the analysis part, but don't forget!}
+
+After the preprocessing stage, the dataset comprises 4249 records, with each record containing 21 variables. Among these variables, 5 are numerical and the rest are categorical.
 
 
 \section{Assumptions for Causal Inference}
@@ -108,11 +114,19 @@ The Ignorability assumption states that the treatment assignment $T$ is independ
 
 \gur{'We close with a reminder to readers of the optimistic view of the complexity of data and how the correlation between observed variables and unmeasured ones can reduce any bias associated with unmeasured information.' https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10666970/}
 
+\gur{something about stress and events during the studies that weren't documented?}
+
 \subsection{Common Support (Overlap)}
 
 The Common Support assumption states that each unit has a non-zero probability of receiving each treatment level, i.e., $\forall x \in X, P(T=1|X=x) > 0$ and $P(T=0|X=x) > 0$.
 
-We empirically validate this assumption using propensity scores. We trained a logistic regression model to predict the treatment assignment based on the covariates, and used the predicted probabilities as the propensity scores. We then plotted the propensity scores of the treated and control groups to ensure that there is a significant overlap between the two groups. The results are presented in Figure \ref{fig:common_support}. The lowest predicted propensity score of the treated group is $0.0209$, and the control group's is $0.009$. Therefore, we conclude that the common support assumption holds in our data.
+We empirically validate this assumption using propensity scores. We trained a logistic regression model to predict the treatment assignment based on the covariates and used the predicted probabilities as the propensity scores. We then plotted the propensity scores of the treated and control groups to ensure a significant overlap between the two groups. The results are presented in Figure \ref{fig:common_support}. The lowest predicted propensity score of the treated group is $0.0209$, and the control group's is $0.009$. Therefore, we conclude that the common support assumption holds in our data.
+
+However, it is important to note that  according to the OECD Review of Inclusive Education in Portugal \citep{/content/publication/a9c95902-en} 
+
+despite significant improvements in access and attainment, challenges persist for disadvantaged groups such as low-income students, those with immigrant backgrounds, and the Roma community. These disparities suggest that while there may be overall support for the common support assumption, certain groups might have systematically different opportunities or probabilities of accessing higher education. This can influence the degree of overlap between treated and control groups, particularly when accounting for these vulnerable populations.
+
+\gur{statistic of overlap? if yes, with citation.}
 
 \begin{figure}
     \centering
@@ -191,28 +205,34 @@ There are different covariate adjustment methods, where the separation between t
 
 \subsection{Propensity-Based Methods}
 
-One of the problems with covariate adjustment methods is the sensitivity to model simplification and the sparsity of the covariates when handling high-dimensional data \citep{zhao2020propensity}. The propensity score methods of Rosenbaum and Rubin (RR) aim to address the fundamental problem by adjusting for the propensity score rather than potentially high-dimensional covariates. RR demonstrated that under the assumption of no unmeasured confounding, this is enough for unbiased estimation of causal effects and such estimation can be accomplished using simple non-parametric methods.
+One of the problems with covariate adjustment methods is the sensitivity to model simplification and the sparsity of the covariates when handling high-dimensional data \citep{zhao2020propensity}. The propensity score methods of Rosenbaum and Rubin (RR) aim to address the fundamental problem by adjusting for the propensity score rather than potentially high-dimensional covariates. RR demonstrated that under the assumption of no unmeasured confounding, this is enough for unbiased estimation of causal effects and such estimation can be accomplished using simple non-parametric methods. \gur{cite the survey? \citep{abdia2017propensity}}
 
-\paragraph{Inverse Probability Weighting} Relies on building a logistic regression model to estimate the probability of the exposure observed (i.e., the propensity score) for a particular individual and using the predicted probability as a weight in subsequent analyses. Our analysis uses the Horvitz–Thompson estimator \citep{horvitz1952generalization}. Intuitively, it estimates the target variable's mean in the treatment and control groups by weighting the observations based on their "membership". One must first train a logistic regression model for predicting the propensity score $\hat e(x) = \hat P(T=1 | X=x)$. Then, use it to weigh each of the samples in the following way to receive each of the average effects:
+\paragraph{Inverse Probability Weighting (IPW)} Relies on building a logistic regression model to estimate the probability of the exposure observed (i.e., the propensity score) for a particular individual and using the predicted probability as a weight in subsequent analyses. Our analysis uses the Horvitz–Thompson estimator \citep{horvitz1952generalization}. Intuitively, it estimates the target variable's mean in the treatment and control groups by weighting the observations based on their "membership". One must first train a logistic regression model for predicting the propensity score $\hat e(x) = \hat P(T=1 | X=x)$. Then, use it to weigh each of the samples in the following way to receive each of the average effects:
 
 \begin{itemize}
-    \item \textit{ATE:} \todo{}
+    \item \textit{ATE:} Compare the weighted means of the treatment and control groups, where units with higher (lower) propensity scores have more influence in the treatment (control) group.
     \[
     \widehat{ATE} = \frac{1}{n}\sum_{i=1}^N \frac{t_i y_i}{e(x)} - \frac{1}{n}\sum_{i=1}^N \frac{(1-t_i)y_i}{1-e(x)}
     \]
 
-    \item \textit{ATT:} \todo{}
+    \item \textit{ATT:} Compare the mean of the treatment group with a weighted mean of the control group, where units with higher propensity scores (more likely to be a part of the treatment group) have more influence \citep{lechner2001identification}.
     \[
     \widehat{ATT} = \frac{\sum_{i=1}^N t_i y_i}{\sum_{i=1}^N T_i} - \frac{\sum_{i=1}^N (1-t_i)y_i \cdot \frac{e(x_i)}{1-e(x_i)}}{\sum_{i=1}^N (1-t_i) \cdot \frac{e(x_i)}{1-e(x_i)}}
     \]
-    \item \textit{ATC:} \todo{}
+    \item \textit{ATC:} Compare the mean of the treatment control with a weighted mean of the treatment group, where units with lower propensity scores (more likely to be a part of the control group) have more influence.
     \[
-    \widehat{ATC} = \frac{\sum_{i=1}^N t_iy_i * \frac{1-e(x_i)}{e(x_i)}}{\sum_{i=1}^N t_i * \frac{1-e(x_i)}{e(x_i)}} - \frac{\sum_{i=1}^N (1-t_i)y_i}{\sum_{i=1}^N (1-T_i)}
+    \widehat{ATC} = \frac{\sum_{i=1}^N t_iy_i \cdot \frac{1-e(x_i)}{e(x_i)}}{\sum_{i=1}^N t_i \cdot \frac{1-e(x_i)}{e(x_i)}} - \frac{\sum_{i=1}^N (1-t_i)y_i}{\sum_{i=1}^N (1-T_i)}
     \]
 \end{itemize}
 
 
-\paragraph{Propensity Score Matching} Propensity Score Matching is a method that groups treated and control units with similar propensity scores. This method is often thought of as attempting to replicate a randomized controlled experiment, as it tries to create (in some sense) a similar balance in observed variables between the treatment and control groups. After matching the units, the causal effect of the treatment can be estimated by averaging the differences in outcomes between the matched treated and control units in each group.
+% \paragraph{Propensity Score Matching (PSM)} Introduced by \citet{rosenbaum1983central}, this method groups treated and control units with similar propensity scores, and estimate the average effect by averaging the differences in outcomes between the matched treated and control units in each group. This method is often thought of as attempting to replicate a randomized controlled experiment, as it tries to create (in some sense) a similar balance in observed variables between the treatment and control groups. PSM methods usually differ in the matching technique and in the estimation of the average effects using the matched units.
+
+\gur{Propensity score based stratiﬁcation.}
+
+Stratiﬁcation could be used to estimate ATT (Williamson et al., 2011). In stratiﬁcation, subjects areﬁrst ranked according to their estimated propensity score, then the strata are created according to thecut off points deﬁned by the quantiles of the estimated propensiy scores (Austin, 2011). Subjects withsimilar propensity score are placed into one stratum. It has been shown that stratiﬁcation with ﬁvestrata based on the quantiles removes 90\% of the bias in estimating treatment effect (Austin, 2011;Rosenbaum and Rubin, 1984). ATT can be estimated by the sum of the weighted treatment effect ineach stratum, where the weight of the stratum is the proportion of the treated subjects in the stratumover all treated subjects in the sample. That is,
+
+\gur{citing for ATT: \citet{} }
 
 \paragraph{Implementation Details} \todo{}
 
@@ -255,5 +275,56 @@ The Doubly Robust Estimator is consistent (not biased) if either the outcome reg
 \bibliography{references.bib}
 
 \appendix
+
+\newpage
+\section{Variables grouped by class}
+
+\begin{table}[h!]\label{table:variables list}
+\centering
+\caption{Attributes used grouped by class of attribute.}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Class of Attribute}           & \textbf{Attribute}                                                 & \textbf{Type}             \\ \hline
+\multirow{6}{*}{Demographic data}     & Marital status                                                     & Numeric/discrete          \\ \cline{2-3} 
+                                      & Nationality                                                        & Numeric/discrete          \\ \cline{2-3} 
+                                      & Displaced                                                          & Numeric/binary            \\ \cline{2-3} 
+                                      & Gender                                                             & Numeric/binary            \\ \cline{2-3} 
+                                      & Age at enrollment                                                  & Numeric/discrete          \\ \cline{2-3} 
+                                      & International                                                      & Numeric/binary            \\ \hline
+\multirow{8}{*}{Socioeconomic data}   & Mother's qualification                                             & Numeric/discrete          \\ \cline{2-3} 
+                                      & Father's qualification                                             & Numeric/discrete          \\ \cline{2-3} 
+                                      & Mother's occupation                                                & Numeric/discrete          \\ \cline{2-3} 
+                                      & Father's occupation                                                & Numeric/discrete          \\ \cline{2-3} 
+                                      & Educational special needs                                          & Numeric/binary            \\ \cline{2-3} 
+                                      & Debtor                                                             & Numeric/binary            \\ \cline{2-3} 
+                                      & Tuition fees up to date                                            & Numeric/binary            \\ \cline{2-3} 
+                                      & Scholarship holder                                                 & Numeric/binary            \\ \hline
+\multirow{3}{*}{Macroeconomic data}   & Unemployment rate                                                  & Numeric/continuous        \\ \cline{2-3} 
+                                      & Inflation rate                                                     & Numeric/continuous        \\ \cline{2-3} 
+                                      & GDP                                                                & Numeric/continuous        \\ \hline
+\multirow{5}{*}{Academic data at enrollment} & Application mode                                                   & Numeric/discrete          \\ \cline{2-3} 
+                                      & Application order                                                  & Numeric/ordinal           \\ \cline{2-3} 
+                                      & Course                                                             & Numeric/discrete          \\ \cline{2-3} 
+                                      & Daytime/evening attendance                                         & Numeric/binary            \\ \cline{2-3} 
+                                      & Previous qualification                                             & Numeric/discrete          \\ \hline
+\multirow{6}{*}{Academic data at the end of 1st semester} & Curricular units 1st sem (credited)                                & Numeric/discrete          \\ \cline{2-3} 
+                                      & Curricular units 1st sem (enrolled)                                & Numeric/discrete          \\ \cline{2-3} 
+                                      & Curricular units 1st sem (evaluations)                             & Numeric/discrete          \\ \cline{2-3} 
+                                      & Curricular units 1st sem (approved)                                & Numeric/discrete          \\ \cline{2-3} 
+                                      & Curricular units 1st sem (grade)                                   & Numeric/continuous        \\ \cline{2-3} 
+                                      & Curricular units 1st sem (without evaluations)                     & Numeric/discrete          \\ \hline
+\multirow{6}{*}{Academic data at the end of 2nd semester} & Curricular units 2nd sem (credited)                                & Numeric/discrete          \\ \cline{2-3} 
+                                      & Curricular units 2nd sem (enrolled)                                & Numeric/discrete          \\ \cline{2-3} 
+                                      & Curricular units 2nd sem (evaluations)                             & Numeric/discrete          \\ \cline{2-3} 
+                                      & Curricular units 2nd sem (approved)                                & Numeric/discrete          \\ \cline{2-3} 
+                                      & Curricular units 2nd sem (grade)                                   & Numeric/continuous        \\ \cline{2-3} 
+                                      & Curricular units 2nd sem (without evaluations)                     & Numeric/discrete          \\ \hline
+Target                               & Target                                                             & Categorical               \\ \hline
+\end{tabular}
+\end{table}
+
+
+
+
 
 \end{document}
