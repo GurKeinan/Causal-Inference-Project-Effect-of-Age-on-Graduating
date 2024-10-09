@@ -239,7 +239,7 @@ One of the problems with covariate adjustment methods is the sensitivity to mode
 
 \paragraph{Propensity Score Stratification} Divides subjects into strata based on quantiles of their estimated propensity scores \citep{williamson2012propensity}. Subjects with similar propensity scores are placed into the same stratum, ensuring balance within each stratum. 
 It has been shown that stratiﬁcation with ﬁve strata based on the quantiles removes 90\% of the bias in estimating treatment effect \citep{austin2011introduction, rosenbaum1984reducing}.
-Once the strata are created, the treatment effect for each stratum $ \hat{\tau}_k $ is computed as the difference in mean outcomes between treated and control subjects. Formally, for each stratum $ k $, the treatment effect is calculated as $\hat{\tau}_k = \text{Mean}(Y_{T_k}) - \text{Mean}(Y_{C_k})$, where $ \text{Mean}(Y_{T_k}) $ is the average outcome for the treated subjects and $ \text{Mean}(Y_{C_k}) $ is the average outcome for the control subjects in the $ k $-th stratum. The overall causal effects are then calculated by weighting these stratum-specific treatment effects according to the relevant population proportions.
+Once the strata are created, the treatment effect for each stratum $ \hat{\tau}_k $ is computed as the difference in mean outcomes between treated and control subjects. Formally, for each stratum $ k $, the treatment effect is calculated as $\hat{\tau}_k = \text{Mean}(Y_{T_k}) - \text{Mean}(Y_{C_k})$, where $ \text{Mean}(Y_{T_k}) $ is the average outcome for the treated subjects and $ \text{Mean}(Y_{C_k}) $ is the average outcome for the control subjects in the $ k $-th stratum. \yarden{I would use \(\overline{Y}_{C_k}\) instead of \(\text{Mean}(Y_{C_k})\) and in all other places as well.} The overall causal effects are then calculated by weighting these stratum-specific treatment effects according to the relevant population proportions.
 
 \begin{itemize}
     \item \textit{ATE:} Weigh each stratum's treatment effect by the proportion of the total population in that stratum:
@@ -269,7 +269,7 @@ Once the strata are created, the treatment effect for each stratum $ \hat{\tau}_
 
 \subsection{Doubly-Robust Method}
 
-The doubly robust method fortuitously combines both outcome regression and propensity score weighting, providing a consistent estimator for the average treatment effect even if either the propensity score model or the outcome regression model is misspecified, as long as one of the two is correctly specified \citep{bang2005doubly}. The estimator first requires the estimation of the propensity score, $\hat{P}(X_i)$, and the outcome models, $\hat{\mu}_1(X_i)$ and $\hat{\mu}_0(X_i)$. These are then combined in the following way to estimate the average treatment effects:
+The doubly robust method fortuitously combines both outcome regression and propensity score weighting, providing a consistent estimator for the average treatment effect even if either the propensity score model or the outcome regression model is misspecified, as long as one of the two is correctly specified \citep{bang2005doubly}. The estimator first requires the estimation of the propensity score, $\hat{P}(X_i)$, \yarden{I would use \(\hat{e}(X_i)\) as we used in all other models for consistency.} and the outcome models, $\hat{\mu}_1(X_i)$ and $\hat{\mu}_0(X_i)$. These are then combined in the following way to estimate the average treatment effects:
 
 \gur{Add explanation of augmentation?}
 
@@ -292,7 +292,7 @@ The doubly robust method fortuitously combines both outcome regression and prope
     
     \item \textit{ATC:} Following \citet{tao2019doubly}, the doubly robust estimator for the ATC compares the observed outcomes in the control group and a weighted and augmented estimate of the treatment group's outcomes:
     \[
-    \widehat{ATT}^{DR} = \frac{\sum_i \left[ \{ \frac{ 1 - \hat{P}(X_i)}{\hat{P}(X_i)} T_i Y_i - \frac{ T_i - \hat{P}(X_i)}{\hat{P}(X_i)} \hat{\mu}_1(X_i) \}   - (1-T_i)Y_i \right]}{\sum_i 1 - T_i}
+    \widehat{ATC}^{DR} = \frac{\sum_i \left[ \{ \frac{ 1 - \hat{P}(X_i)}{\hat{P}(X_i)} T_i Y_i - \frac{ T_i - \hat{P}(X_i)}{\hat{P}(X_i)} \hat{\mu}_1(X_i) \}   - (1-T_i)Y_i \right]}{\sum_i 1 - T_i}
     \]
 \end{itemize}
 
