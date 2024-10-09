@@ -9,6 +9,7 @@
 \usepackage{helvet}  
 
 \usepackage{amsfonts}
+\usepackage{amsmath}
 \usepackage{bbm}
 
 \usepackage{graphicx}
@@ -43,7 +44,7 @@
 
 \gur{changing our question to 'What is the causal effect of enrolling as an adult student (age 21 or older) on the probability of graduating from an academic program within the allotted time?', say somewhere in the paper why we determined the target to be like this}
 
-\textbf{Note on AI Usage:} We did not use generative AI to write this report. We only used ChatGPT, Claude, and Grammarly to revise and correct our writing.
+% \textbf{Note on AI Usage:} We did not use generative AI to write this report. We only used ChatGPT, Claude, and Grammarly to revise and correct our writing.
 
 \section{Data Review and Preprocessing}
 
@@ -65,15 +66,13 @@ The data was created by joining three primary data sources:
 Traditionally, each attribute used in the dataset belongs to one of the following classes: demographic,
 socioeconomic, macroeconomic, academic data at enrollment, and academic data at the end of the first and second semesters. For a full list of the variables in the dataset and their corresponding classes, please refer to Table~\ref{table:variables list}
 
-
-\todo{Age limitation in Portugal. We can mention and cite that Portugal is said to welcome education for all ages. This statement is commonly used regarding older people, but still.}
-
 \subsection{Data Preprocessing}
 
 \paragraph{Treatment and Target variables} Following our causal question, we introduce a new binary variable - "being over 21". This variable acts as the \emph{treatment variable} in our analysis. We omit the numerical age variable for the rest of the analysis. Additionally, as our question focuses on the probability of graduating from an academic program, we introduce another binary variable - "Graduated from an academic program" rather than the commonly used trinary variable - "graduate/  enrolled/ dropout". This variable is the \emph{target variable} in our analysis. The distributions of the target and treatment variables are visually presented in Figure~\ref{fig:target_and_treatments_histograms}
 
 \begin{figure}
     \centering
+    \caption{Distributions of the target and treatment variables}
     \label{fig:target_and_treatments_histograms}
     \includegraphics[width = \textwidth]{plots/target_and_treatments_histograms.png}
 \end{figure}
@@ -108,13 +107,21 @@ The Consistency assumption states that an individual's potential outcome under h
 
 \subsection{Ignorability - No Unmeasured Confounders}
 
-The Ignorability assumption states that the treatment assignment $T$ is independent of the potential outcomes $Y_0, Y_1$ given the observed covariates $X$, i.e., $Y_0, Y_1 \perp T \ | \ X$. 
+% The Ignorability assumption states that the treatment assignment $T$ is independent of the potential outcomes $Y_0, Y_1$ given the observed covariates $X$, i.e., $Y_0, Y_1 \perp T \ | \ X$. 
 
-\gur{'Unverifiable assumption.' https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10666970/}
+% \gur{'Unverifiable assumption.' https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10666970/}
 
-\gur{'We close with a reminder to readers of the optimistic view of the complexity of data and how the correlation between observed variables and unmeasured ones can reduce any bias associated with unmeasured information.' https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10666970/}
+% \gur{'We close with a reminder to readers of the optimistic view of the complexity of data and how the correlation between observed variables and unmeasured ones can reduce any bias associated with unmeasured information.' https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10666970/}
 
-\gur{something about stress and events during the studies that weren't documented?}
+% \gur{something about stress and events during the studies that weren't documented?}
+
+The ignorability assumption, also known as the assumption of no unmeasured confounders, states that the treatment assignment \( T \) is independent of the potential outcomes \( Y_0, Y_1 \) given the observed covariates \( X \), that is, \( Y_0, Y_1 \perp T \ | \ X \). This assumption is essential for ensuring that the estimated treatment effect is unbiased and not confounded by factors affecting both the treatment and the outcome.
+
+However, this assumption is inherently unverifiable in practice since it is impossible to confirm whether all relevant confounders have been measured and included in the model. As noted by \citet{hernan2006estimating}, we cannot account for unmeasured confounders, as we do not observe them. Despite this limitation, research has shown that correlations between observed covariates and unmeasured confounders can reduce the bias associated with missing information \citep{schulz2023no}. This means that if our dataset contains variables from diverse domains that possibly affect the treatment or potential outcomes, we may mitigate the effect of unmeasured confounders.
+
+Based on \citet{alyahyan2020predicting}, we identify several potential confounder groups that may affect both age of enrollment and the probability of academic success: pre-academic performance (such as high school grades, admission test results, and previous course grades); student demographics (including gender, race/ethnicity, socioeconomic status, and family background); student environment (such as class type, semester length, and type of program); and psychological factors (such as student interest, study behavior, stress, anxiety, time management, self-regulation, and motivation). In addition to these factors, macroeconomic indicators, like unemployment rates and inflation, are also considered necessary.
+
+Our dataset contains most of the relevant classes of confounders, including pre-academic performance, student demographics, student environment, and macroeconomic indicators. However, we lack psychological factors, which could be a significant limitation in our analysis, as these factors may influence both age of enrollment and academic success. Furthermore, although academic progression is also an essential confounder, it is a post-treatment variable and, therefore, cannot be used in the causal analysis without risking post-treatment bias.
 
 \subsection{Common Support (Overlap)}
 
@@ -122,11 +129,10 @@ The Common Support assumption states that each unit has a non-zero probability o
 
 We empirically validate this assumption using propensity scores. We trained a logistic regression model to predict the treatment assignment based on the covariates and used the predicted probabilities as the propensity scores. We then plotted the propensity scores of the treated and control groups to ensure a significant overlap between the two groups. The results are presented in Figure \ref{fig:common_support}. The lowest predicted propensity score of the treated group is $0.0209$, and the control group's is $0.009$. Therefore, we conclude that the common support assumption holds in our data.
 
-However, it is important to note that  according to the OECD Review of Inclusive Education in Portugal \citep{/content/publication/a9c95902-en} 
+However, it is essential to note that not everyone receives similar opportunities to acquire higher education in Portugal. According to the OECD Review of Inclusive Education in Portugal \citep{/content/publication/a9c95902-en}, despite significant improvements in access and attainment, inclusion challenges persist for disadvantaged groups such as low-income students and those with immigrant backgrounds. 
 
-despite significant improvements in access and attainment, challenges persist for disadvantaged groups such as low-income students, those with immigrant backgrounds, and the Roma community. These disparities suggest that while there may be overall support for the common support assumption, certain groups might have systematically different opportunities or probabilities of accessing higher education. This can influence the degree of overlap between treated and control groups, particularly when accounting for these vulnerable populations.
+These disparities suggest that while there may be overall support for the common support assumption, certain groups might have systematically different opportunities or probabilities of accessing higher education and, therefore, receiving the treatment. This might pose a challenge to the common support assumption, particularly for vulnerable populations.
 
-\gur{statistic of overlap? if yes, with citation.}
 
 \begin{figure}
     \centering
@@ -226,13 +232,35 @@ One of the problems with covariate adjustment methods is the sensitivity to mode
 \end{itemize}
 
 
-% \paragraph{Propensity Score Matching (PSM)} Introduced by \citet{rosenbaum1983central}, this method groups treated and control units with similar propensity scores, and estimate the average effect by averaging the differences in outcomes between the matched treated and control units in each group. This method is often thought of as attempting to replicate a randomized controlled experiment, as it tries to create (in some sense) a similar balance in observed variables between the treatment and control groups. PSM methods usually differ in the matching technique and in the estimation of the average effects using the matched units.
+% \gur{Propensity score based stratiﬁcation.}
 
-\gur{Propensity score based stratiﬁcation.}
+% Stratiﬁcation could be used to estimate ATT (Williamson et al., 2011). In stratiﬁcation, subjects are ﬁrst ranked according to their estimated propensity score; then the strata are created according to the cut-off points deﬁned by the quantiles of the estimated propensity scores (Austin, 2011). Subjects with similar propensity scores are placed into one stratum. It has been shown that stratiﬁcation with ﬁve strata based on the quantiles removes 90\% of the bias in estimating treatment effect (Austin, 2011; Rosenbaum and Rubin, 1984). ATT can be estimated by the sum of the weighted treatment effect in each stratum, where the weight of the stratum is the proportion of the treated subjects in the stratum over all treated subjects in the sample. That is,
 
-Stratiﬁcation could be used to estimate ATT (Williamson et al., 2011). In stratiﬁcation, subjects areﬁrst ranked according to their estimated propensity score, then the strata are created according to thecut off points deﬁned by the quantiles of the estimated propensiy scores (Austin, 2011). Subjects withsimilar propensity score are placed into one stratum. It has been shown that stratiﬁcation with ﬁvestrata based on the quantiles removes 90\% of the bias in estimating treatment effect (Austin, 2011;Rosenbaum and Rubin, 1984). ATT can be estimated by the sum of the weighted treatment effect ineach stratum, where the weight of the stratum is the proportion of the treated subjects in the stratumover all treated subjects in the sample. That is,
 
-\gur{citing for ATT: \citet{} }
+\paragraph{Propensity Score Stratification} Divides subjects into strata based on quantiles of their estimated propensity scores \citep{williamson2012propensity}. Subjects with similar propensity scores are placed into the same stratum, ensuring balance within each stratum. 
+It has been shown that stratiﬁcation with ﬁve strata based on the quantiles removes 90\% of the bias in estimating treatment effect \citep{austin2011introduction, rosenbaum1984reducing}.
+Once the strata are created, the treatment effect for each stratum $ \hat{\tau}_k $ is computed as the difference in mean outcomes between treated and control subjects. Formally, for each stratum $ k $, the treatment effect is calculated as $\hat{\tau}_k = \text{Mean}(Y_{T_k}) - \text{Mean}(Y_{C_k})$, where $ \text{Mean}(Y_{T_k}) $ is the average outcome for the treated subjects and $ \text{Mean}(Y_{C_k}) $ is the average outcome for the control subjects in the $ k $-th stratum. The overall causal effects are then calculated by weighting these stratum-specific treatment effects according to the relevant population proportions.
+
+\begin{itemize}
+    \item \textit{ATE:} Weigh each stratum's treatment effect by the proportion of the total population in that stratum:
+    \[
+    \widehat{ATE} = \sum_{k=1}^{K} \frac{N_k}{N} \hat{\tau}_k,
+    \]
+    where $ N_k $ is the number of subjects in the $ k $-th stratum, and $ N $ is the total number of subjects in the entire sample. 
+
+    \item \textit{ATT:} Weigh each stratum’s treatment effect by the proportion of treated subjects in that stratum:
+    \[
+    \widehat{ATT} = \sum_{k=1}^{K} \frac{N_{T_k}}{N_T} \hat{\tau}_k,
+    \]
+    where $ N_{T_k} $ is the number of treated subjects in the $ k $-th stratum, and $ N_T $ is the total number of treated subjects.
+
+    \item \textit{ATC:} Weigh each stratum's treatment effect by the proportion of control subjects in that stratum:
+    \[
+    \widehat{ATC} = \sum_{k=1}^{K} \frac{N_{C_k}}{N_C} \hat{\tau}_k,
+    \]
+    where $ N_{C_k} $ is the number of control subjects in the $ k $-th stratum, and $ N_C $ is the total number of control subjects.
+\end{itemize}
+
 
 \paragraph{Implementation Details} \todo{}
 
@@ -241,12 +269,32 @@ Stratiﬁcation could be used to estimate ATT (Williamson et al., 2011). In stra
 
 \subsection{Doubly-Robust Method}
 
+The doubly robust method fortuitously combines both outcome regression and propensity score weighting, providing a consistent estimator for the average treatment effect even if either the propensity score model or the outcome regression model is misspecified, as long as one of the two is correctly specified \citep{bang2005doubly}. The estimator first requires the estimation of the propensity score, $\hat{P}(X_i)$, and the outcome models, $\hat{\mu}_1(X_i)$ and $\hat{\mu}_0(X_i)$. These are then combined in the following way to estimate the average treatment effects:
 
-Doubly Robust Estimation is a method that fortuitously combines outcome regression and propensity score weighting methods to estimate the causal effect of the treatment. Formally, given the observed outcome $Y$, the treatment assignment $T$, and the covariates $X$, the Doubly Robust Estimator is defined as:
+\gur{Add explanation of augmentation?}
 
-\gur{Add the formula here.}
+\gur{small letters?}
 
-The Doubly Robust Estimator is consistent (not biased) if either the outcome regression model or the propensity score model is correctly specified, making it a robust method for estimating causal effects.
+\gur{remove superscript DR?}
+
+\gur{cite }
+
+\begin{itemize}
+    \item \textit{ATE:} Compares the weighted and augmented averages of the observed outcomes in the treated and control groups:
+    \[
+    \widehat{ATE}^{DR} = \frac{1}{N} \sum_i \left( \frac{T_i (Y_i - \hat{\mu}_1(X_i))}{\hat{P}(X_i)} + \hat{\mu}_1(X_i) \right) - \frac{1}{N} \sum_i \left( \frac{(1 - T_i)(Y_i - \hat{\mu}_0(X_i))}{1 - \hat{P}(X_i)} + \hat{\mu}_0(X_i) \right)
+    \]
+    
+    \item \textit{ATT:} Following \citet{tao2019doubly}, the doubly robust estimator for the ATT compares the observed outcomes in the treated group with a weighted and augmented estimate of the control group's outcomes: 
+    \[
+    \widehat{ATT}^{DR} = \frac{\sum_i \left[ T_i Y_i - \frac{ T_i - \hat{P}(X_i)}{1 - \hat{P}(X_i)} \hat{\mu}_0(X_i) \right]}{\sum_i T_i}
+    \]
+    
+    \item \textit{ATC:} Following \citet{tao2019doubly}, the doubly robust estimator for the ATC compares the observed outcomes in the control group and a weighted and augmented estimate of the treatment group's outcomes:
+    \[
+    \widehat{ATT}^{DR} = \frac{\sum_i \left[ \{ \frac{ 1 - \hat{P}(X_i)}{\hat{P}(X_i)} T_i Y_i - \frac{ T_i - \hat{P}(X_i)}{\hat{P}(X_i)} \hat{\mu}_1(X_i) \}   - (1-T_i)Y_i \right]}{\sum_i 1 - T_i}
+    \]
+\end{itemize}
 
 \paragraph{Implementation Details} \todo{Details about the implementation of the Doubly Robust Estimator.}
 
