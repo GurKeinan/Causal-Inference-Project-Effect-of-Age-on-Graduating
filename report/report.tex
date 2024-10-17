@@ -9,6 +9,7 @@
 \usepackage{bbm}
 
 \usepackage{graphicx}
+\usepackage{subcaption}
 
 \usepackage{multirow}
 
@@ -34,10 +35,8 @@
 \maketitle
 
 \begin{abstract}
-    Many adolescents worldwide have wondered when they should start their journey in higher education. The writers of this project themselves had decided long ago to join the 'Atuda' program, which means starting university at the relatively young age of eighteen. Thus, it is natural to wonder - does the student's age at the start of learning at the university affect the success of the student? An answer to this question can drastically change the landscape of the campuses worldwide and the grades of those studying there. In this Causal Inference project, we aim to explore precisely that. Specifically, we investigate the following causal question: \emph{What is the causal effect of being an adult student (over 21) on the probability of graduating from an academic program?} Throughout this project, we present and explore the data we use to tackle this question and determine its suitability for causal analysis tasks, formally present the methods we use to answer the research question, present and discuss the analysis results, and conclude the project. One can find all of the resources used in the project in this \href{https://github.com/GurKeinan/Causal-Inference-Project-Effect-of-Age-on-Graduating}{GitHub repository}.
+    Many adolescents worldwide have wondered when they should start their journey in higher education. The writers of this project themselves had decided long ago to join the 'Atuda' program, which means starting university at the relatively young age of eighteen. Thus, it is natural to wonder - does the student's age at the start of learning at the university affect the success of the student? An answer to this question can drastically change the landscape of the campuses worldwide and the grades of those studying there. In this Causal Inference project, we aim to explore precisely that. Specifically, we investigate the following causal question: \emph{What is the causal effect of enrolling as an adult student (age 21 or older) on the probability of graduating from an academic program within the allotted time?} Throughout this project, we present and explore the data we use to tackle this question and determine its suitability for causal analysis tasks, formally present the methods we use to answer the research question, present and discuss the analysis results, and conclude the project. One can find all of the resources used in the project in this \href{https://github.com/GurKeinan/Causal-Inference-Project-Effect-of-Age-on-Graduating}{GitHub repository}.
 \end{abstract}
-
-\gur{changing our question to 'What is the causal effect of enrolling as an adult student (age 21 or older) on the probability of graduating from an academic program within the allotted time?', say somewhere in the paper why we determined the target to be like this}
 
 % \textbf{Note on AI Usage:} We did not use generative AI to write this report. We only used ChatGPT, Claude, and Grammarly to revise and correct our writing.
 
@@ -63,11 +62,11 @@ socioeconomic, macroeconomic, academic data at enrollment, and academic data at 
 
 \subsection{Data Preprocessing}
 
-\paragraph{Treatment and Target variables} Following our causal question, we introduce a new binary variable - "being over 21". This variable acts as the \emph{treatment variable} in our analysis. We omit the numerical age variable for the rest of the analysis. Additionally, as our question focuses on the probability of graduating from an academic program, we introduce another binary variable - "Graduated from an academic program" rather than the commonly used trinary variable - "graduate/  enrolled/ dropout". This variable is the \emph{target variable} in our analysis. The distributions of the target and treatment variables are visually presented in Figure~\ref{fig:target_and_treatments_histograms}
+\paragraph{Treatment and Target variables} Following our causal question, we introduce a new binary variable - "being 21 or older". This variable acts as the \emph{treatment variable} in our analysis. We omit the numerical age variable for the rest of the analysis. Additionally, as our question focuses on the probability of graduating from an academic program within the allotted time, we introduce another binary variable - "Graduated from an academic program within the expected timeframe" rather than the commonly used trinary variable - "graduate/ enrolled/ dropout". This variable is the \emph{target variable} in our analysis. Importantly, we consider students who are still enrolled beyond the expected completion time as not having graduated within the allotted time, aligning with the standard duration of academic programs in Portuguese higher education. The distributions of the target and treatment variables are visually presented in Figure~\ref{fig:target_and_treatments_histograms}
 
 \begin{figure}
     \centering
-    \caption{Distributions of the target and treatment variables}
+    \caption{Distributions of the target (graduation within allotted time) and treatment (adult enrollment) variables}
     \label{fig:target_and_treatments_histograms}
     \includegraphics[width = \textwidth]{plots/target_and_treatments_histograms.png}
 \end{figure}
@@ -158,51 +157,82 @@ Each of the three measures provides a different perspective on the causal effect
 
 \subsection{Methods}
 
-\gur{Covariate adjustment, IPW, propensity score matching, doubly robust}
-
-\gur{Estimate ATE, ATT, and derive ATC through the mathematical relation}
-
-\gur{For Covariate adjustment, calculate ATE as usual, calculate ATT by only iterating over the treated group and ATC by only iterating over the control}
-
-\gur{For IPW, use TA5 and derive ATC through the mathematical relation between ATE, ATT and ATC}
-
-\gur{For propensity score matching, calculate ATT and ATC by matching treated to control and control to treated, respectively, and derive ATE through the mathematical relation between ATE, ATT and ATC}
-
-\gur{For the doubly robust, use the paper I put in the references and cite it for all three.}
+\begin{figure}
+    \centering
+    \caption{ROC curves of possible classifiers \gur{change title and subtitles}}
+    \label{fig:mainfig}
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{plots/ROC_curve_Y_given_XT.png}
+        \caption{Classifiers of $Y | X, T$}
+        \label{fig:ROC_curve_Y_given_XT}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{plots/ROC_curve_T_given_X.png}
+        \caption{Classifiers of $T | X$}
+        \label{fig:ROC_curve_T_given_X}
+    \end{subfigure}
+\end{figure}
 
 The fundamental problem of causal inference is that directly observing causal effects is impossible. It is impossible to observe both potential outcomes of the units and compute the impact of the treatment. In the remainder of this section, we present the estimation methods we used in our analysis, explain how they are trying to handle the mentioned problem, present the assumptions each requires for truthfully estimating the causal effects, and detail the implementation of each method.
 
 
+% \subsection{Covariate Adjustment}
+
+% Covariate adjustment methods use statistical models to regress the missing potential outcomes based on the observed covariates and the treatment. The regressed values are then used to estimate the average treatment effects.
+
+% There are different covariate adjustment methods, where the separation between them is usually found in if and how to separate the treatment variable from the covariates while regressing the missing potential outcomes and how to use the regressed values for the average effect estimation. We used the methods \emph{S-Learner} and \emph{T-Learner} for our analysis.
+
+% \gur{Theoretical guarantees?}
+
+% \paragraph{S-Learner} Addresses the treatment variable $T$ as one of the covariates. First, one must learn a statistical model for predicting the conditional average treatment effect (CATE) as a function of the covariates $X$ and the treatment $T$ - $\hat{\mu}(X, T) = \hat{\mathbb{E}}[Y^{obs} | X, T]$. Any ML method can be used for this purpose, but importantly, the whole population is used to learn the model. Then, use the learned model to estimate the average treatment effects as follows:
+
+% \begin{itemize}
+%     \item \textit{ATE:} Average the predicated causal effect on all of the population:
+%     \[
+%     \widehat{ATE}^{SL} = \frac{1}{n} \sum_{i=1}^{n} \hat{\mu}(x_i, 1) - \hat{\mu}(x_i, 0)
+%     \]
+%     \item \textit{ATT:} Average the predicted causal effect on the treatment group:
+%     \[
+%     \widehat{ATT}^{SL} = \frac{1}{\sum_{i=1}^{n} t_i} \sum \sum_{i=1}^{n} t_i \left[ \hat{\mu}(x_i, 1) - \hat{\mu}(x_i, 0) \right] 
+%     \]
+%     \item \textit{ATC:} Average the predicted causal effect on the control group:
+%     \[
+%     \widehat{ATC}^{SL} = \frac{1}{\sum_{i=1}^{n} 1 - t_i} \sum \sum_{i=1}^{n} (1 - t_i) \left[ \hat{\mu}(x_i, 1) - \hat{\mu}(x_i, 0) \right]
+%     \]
+% \end{itemize}
+
+% \paragraph{T-Learner} Uses observations in the treatment group to estimate the response under control, $\hat\mu_1(x) = \hat{\mathbb{E}}[Y^{obs} | X, 1]$. Similarly, use observations in the control group to estimate the response under treatment, $\hat\mu_0(x) = \hat{\mathbb{E}}[Y^{obs} | X, 0]$. Any machine learning method can be used to get these estimates. Calculating the average effects continues similarly to the S-Learner with $\hat \mu (X_i, T)$ replaced with $\hat \mu_T(x)$.
+
 \subsection{Covariate Adjustment}
-
 Covariate adjustment methods use statistical models to regress the missing potential outcomes based on the observed covariates and the treatment. The regressed values are then used to estimate the average treatment effects.
-
 There are different covariate adjustment methods, where the separation between them is usually found in if and how to separate the treatment variable from the covariates while regressing the missing potential outcomes and how to use the regressed values for the average effect estimation. We used the methods \emph{S-Learner} and \emph{T-Learner} for our analysis.
-
-\gur{Theoretical guarantees?}
-
 \paragraph{S-Learner} Addresses the treatment variable $T$ as one of the covariates. First, one must learn a statistical model for predicting the conditional average treatment effect (CATE) as a function of the covariates $X$ and the treatment $T$ - $\hat{\mu}(X, T) = \hat{\mathbb{E}}[Y^{obs} | X, T]$. Any ML method can be used for this purpose, but importantly, the whole population is used to learn the model. Then, use the learned model to estimate the average treatment effects as follows:
 
 \begin{itemize}
     \item \textit{ATE:} Average the predicated causal effect on all of the population:
     \[
-    \widehat{ATE} = \frac{1}{n} \sum_{i=1}^{n} \hat{\mu}(x_i, 1) - \hat{\mu}(x_i, 0)
+    \widehat{ATE}^{SL} = \frac{1}{n} \sum_{i=1}^{n} \hat{\mu}(x_i, 1) - \hat{\mu}(x_i, 0)
     \]
     \item \textit{ATT:} Average the predicted causal effect on the treatment group:
     \[
-    \widehat{ATT} = \frac{1}{\sum_{i=1}^{n} t_i} \sum \sum_{i=1}^{n} t_i \left[ \hat{\mu}(x_i, 1) - \hat{\mu}(x_i, 0) \right] 
+    \widehat{ATT}^{SL} = \frac{1}{\sum_{i=1}^{n} t_i} \sum_{i=1}^{n} t_i \left[ \hat{\mu}(x_i, 1) - \hat{\mu}(x_i, 0) \right] 
     \]
     \item \textit{ATC:} Average the predicted causal effect on the control group:
     \[
-    \widehat{ATC} = \frac{1}{\sum_{i=1}^{n} 1 - t_i} \sum \sum_{i=1}^{n} (1 - t_i) \left[ \hat{\mu}(x_i, 1) - \hat{\mu}(x_i, 0) \right]
+    \widehat{ATC}^{SL} = \frac{1}{\sum_{i=1}^{n} 1 - t_i} \sum_{i=1}^{n} (1 - t_i) \left[ \hat{\mu}(x_i, 1) - \hat{\mu}(x_i, 0) \right]
     \]
 \end{itemize}
 
-\paragraph{T-Learner} Uses observations in the treatment group to estimate the response under control, $\hat\mu_1(x) = \hat{\mathbb{E}}[Y^{obs} | X, 1]$. Similarly, use observations in the control group to estimate the response under treatment, $\hat\mu_0(x) = \hat{\mathbb{E}}[Y^{obs} | X, 0]$. Any machine learning method can be used to get these estimates. Calculating the average effects continues similarly to the S-Learner with $\hat \mu (X_i, T)$ replaced with $\hat \mu_T(x)$.
+\citet{hahn1998role} demonstrated that the S-Learner is consistent given the assumptions of unconfoundedness and overlap. This means that as the sample size increases, the S-Learner's estimates converge to the true treatment effects.
+However, the S-Learner may be prone to model misspecification, as noted by \citet{rubin1979using}. If the relationship between the covariates and the outcome is incorrectly modeled, it can lead to biased estimates of the treatment effects.
+\paragraph{T-Learner} To address the potential issues of model misspecification in the S-Learner, we also employ the T-Learner approach. The T-Learner uses separate models for the treatment and control groups, potentially reducing bias from model misspecification. It uses observations in the treatment group to estimate the response under treatment, $\hat\mu_1(x) = \hat{\mathbb{E}}[Y^{obs} | X, 1]$, and observations in the control group to estimate the response under control, $\hat\mu_0(x) = \hat{\mathbb{E}}[Y^{obs} | X, 0]$. Any machine learning method can be used to get these estimates. Calculating the average effects continues similarly to the S-Learner with $\hat \mu (X_i, T)$ replaced with $\hat \mu_T(x)$.
+\citet{greenland1986identifiability} showed that the T-Learner is consistent and, under the assumptions of unconfoundedness and overlap, is robust against misspecification of the outcome model. This robustness comes from the separate modeling of the treatment and control groups, which allows for different functional forms in each group.
 
-\paragraph{Implementation Details} \todo{}
-
-
+\paragraph{Implementation Details}  we utilized Random Forest classifiers for both the S-Learner and T-Learner approaches. This choice was informed by our analysis of various classifiers' performance in predicting the outcome variable $Y$ given the covariates $X$ and treatment $T$, as illustrated in Figure \ref{fig:ROC_curve_Y_given_XT}. The Random Forest classifier demonstrated the highest Area Under the Curve (AUC) score, indicating its superior predictive performance for our dataset.
+For the S-Learner, we trained a single Random Forest model on the entire dataset, including both the covariates and the treatment variable. For the T-Learner, we trained separate Random Forest models for the treated and control groups. We used these models to predict outcomes for all individuals under both treatment conditions in both cases, allowing us to estimate average effects.
 
 \subsection{Propensity-Based Methods}
 
@@ -213,24 +243,18 @@ One of the problems with covariate adjustment methods is the sensitivity to mode
 \begin{itemize}
     \item \textit{ATE:} Compare the weighted means of the treatment and control groups, where units with higher (lower) propensity scores have more influence in the treatment (control) group.
     \[
-    \widehat{ATE} = \frac{1}{n}\sum_{i=1}^N \frac{t_i y_i}{e(x)} - \frac{1}{n}\sum_{i=1}^N \frac{(1-t_i)y_i}{1-e(x)}
+    \widehat{ATE}^{IPW} = \frac{1}{n}\sum_{i=1}^N \frac{t_i y_i}{\hat e(x)} - \frac{1}{n}\sum_{i=1}^N \frac{(1-t_i)y_i}{1-\hat e(x)}
     \]
 
     \item \textit{ATT:} Compare the mean of the treatment group with a weighted mean of the control group, where units with higher propensity scores (more likely to be a part of the treatment group) have more influence \citep{lechner2001identification}.
     \[
-    \widehat{ATT} = \frac{\sum_{i=1}^N t_i y_i}{\sum_{i=1}^N T_i} - \frac{\sum_{i=1}^N (1-t_i)y_i \cdot \frac{e(x_i)}{1-e(x_i)}}{\sum_{i=1}^N (1-t_i) \cdot \frac{e(x_i)}{1-e(x_i)}}
+    \widehat{ATT}^{IPW} = \frac{\sum_{i=1}^N t_i y_i}{\sum_{i=1}^N T_i} - \frac{\sum_{i=1}^N (1-t_i)y_i \cdot \frac{\hat e(x_i)}{1- \hat e(x_i)}}{\sum_{i=1}^N (1-t_i) \cdot \frac{\hat e(x_i)}{1-\hat e(x_i)}}
     \]
     \item \textit{ATC:} Compare the mean of the treatment control with a weighted mean of the treatment group, where units with lower propensity scores (more likely to be a part of the control group) have more influence.
     \[
-    \widehat{ATC} = \frac{\sum_{i=1}^N t_iy_i \cdot \frac{1-e(x_i)}{e(x_i)}}{\sum_{i=1}^N t_i \cdot \frac{1-e(x_i)}{e(x_i)}} - \frac{\sum_{i=1}^N (1-t_i)y_i}{\sum_{i=1}^N (1-T_i)}
+    \widehat{ATC}^{IPW} = \frac{\sum_{i=1}^N t_iy_i \cdot \frac{1-\hat e(x_i)}{\hat e(x_i)}}{\sum_{i=1}^N t_i \cdot \frac{1-\hat e(x_i)}{\hat e(x_i)}} - \frac{\sum_{i=1}^N (1-t_i)y_i}{\sum_{i=1}^N (1-T_i)}
     \]
 \end{itemize}
-
-
-% \gur{Propensity score based stratiﬁcation.}
-
-% Stratiﬁcation could be used to estimate ATT (Williamson et al., 2011). In stratiﬁcation, subjects are ﬁrst ranked according to their estimated propensity score; then the strata are created according to the cut-off points deﬁned by the quantiles of the estimated propensity scores (Austin, 2011). Subjects with similar propensity scores are placed into one stratum. It has been shown that stratiﬁcation with ﬁve strata based on the quantiles removes 90\% of the bias in estimating treatment effect (Austin, 2011; Rosenbaum and Rubin, 1984). ATT can be estimated by the sum of the weighted treatment effect in each stratum, where the weight of the stratum is the proportion of the treated subjects in the stratum over all treated subjects in the sample. That is,
-
 
 \paragraph{Propensity Score Stratification} Divides subjects into strata based on quantiles of their estimated propensity scores \citep{williamson2012propensity}. Subjects with similar propensity scores are placed into the same stratum, ensuring balance within each stratum. 
 It has been shown that stratiﬁcation with ﬁve strata based on the quantiles removes 90\% of the bias in estimating treatment effect \citep{austin2011introduction, rosenbaum1984reducing}.
@@ -239,59 +263,53 @@ Once the strata are created, the treatment effect for each stratum $ \hat{\tau}_
 \begin{itemize}
     \item \textit{ATE:} Weigh each stratum's treatment effect by the proportion of the total population in that stratum:
     \[
-    \widehat{ATE} = \sum_{k=1}^{K} \frac{N_k}{N} \hat{\tau}_k,
+    \widehat{ATE}^{STR} = \sum_{k=1}^{K} \frac{N_k}{N} \hat{\tau}_k,
     \]
     where $ N_k $ is the number of subjects in the $ k $-th stratum, and $ N $ is the total number of subjects in the entire sample. 
 
     \item \textit{ATT:} Weigh each stratum’s treatment effect by the proportion of treated subjects in that stratum:
     \[
-    \widehat{ATT} = \sum_{k=1}^{K} \frac{N_{T_k}}{N_T} \hat{\tau}_k,
+    \widehat{ATT}^{STR} = \sum_{k=1}^{K} \frac{N_{T_k}}{N_T} \hat{\tau}_k,
     \]
     where $ N_{T_k} $ is the number of treated subjects in the $ k $-th stratum, and $ N_T $ is the total number of treated subjects.
 
     \item \textit{ATC:} Weigh each stratum's treatment effect by the proportion of control subjects in that stratum:
     \[
-    \widehat{ATC} = \sum_{k=1}^{K} \frac{N_{C_k}}{N_C} \hat{\tau}_k,
+    \widehat{ATC}^{STR} = \sum_{k=1}^{K} \frac{N_{C_k}}{N_C} \hat{\tau}_k,
     \]
     where $ N_{C_k} $ is the number of control subjects in the $ k $-th stratum, and $ N_C $ is the total number of control subjects.
 \end{itemize}
 
 
-\paragraph{Implementation Details} \todo{}
-
-\gur{Add ROC curve of several binary classification models, argue that we do that because the guarantees only work if the propensity is exact.}
+\paragraph{Implementation Details} We again utilized a Random Forest classifier to estimate the propensity scores. This decision was based on the classifier performance analysis for predicting the treatment assignment (T) given the covariates (X), as shown in Figure \ref{fig:ROC_curve_T_given_X}. The Random Forest classifier exhibited the highest AUC score, indicating its effectiveness in estimating propensity scores for our dataset.
+In the IPW method, we used these propensity scores to weight the observations, effectively creating a pseudo-population where the treatment assignment is independent of the measured confounders. We implemented safeguards against extreme propensity scores by clipping the values to a range of [1e-5, 1-1e-5] to prevent issues with very small denominators.
+For the Propensity Score Stratification method, we divided the sample into five strata based on the quintiles of the estimated propensity scores. This stratification approach is widely used in the literature and has been shown to remove up to 90\% of the bias in evaluating treatment effects. We then calculated the treatment effect within each stratum and weighted these effects according to the population proportion in each stratum to estimate the average effects.
 
 
 \subsection{Doubly-Robust Method}
 
-The doubly robust method fortuitously combines both outcome regression and propensity score weighting, providing a consistent estimator for the average treatment effect even if either the propensity score model or the outcome regression model is misspecified, as long as one of the two is correctly specified \citep{bang2005doubly}. The estimator first requires the estimation of the propensity score, $\hat{P}(X_i)$, \yarden{I would use \(\hat{e}(X_i)\) as we used in all other models for consistency.} and the outcome models, $\hat{\mu}_1(X_i)$ and $\hat{\mu}_0(X_i)$. These are then combined in the following way to estimate the average treatment effects:
+The doubly robust method fortuitously combines both outcome regression and propensity score weighting, providing a consistent estimator for the average treatment effect even if either the propensity score model or the outcome regression model is misspecified, as long as one of the two is correctly specified \citep{bang2005doubly}. The estimator first requires the estimation of the propensity score, $\hat{e}(x_i)$, and the outcome models, $\hat{\mu}_1(X_i)$ and $\hat{\mu}_0(X_i)$. These are then combined in the following way to estimate the average treatment effects:
 
 \gur{Add explanation of augmentation?}
-
-\gur{small letters?}
-
-\gur{remove superscript DR?}
-
-\gur{cite }
 
 \begin{itemize}
     \item \textit{ATE:} Compares the weighted and augmented averages of the observed outcomes in the treated and control groups:
     \[
-    \widehat{ATE}^{DR} = \frac{1}{N} \sum_i \left( \frac{T_i (Y_i - \hat{\mu}_1(X_i))}{\hat{P}(X_i)} + \hat{\mu}_1(X_i) \right) - \frac{1}{N} \sum_i \left( \frac{(1 - T_i)(Y_i - \hat{\mu}_0(X_i))}{1 - \hat{P}(X_i)} + \hat{\mu}_0(X_i) \right)
+    \widehat{ATE}^{DR} = \frac{1}{N} \sum_i \left( \frac{t_i (y_i - \hat{\mu}_1(x_i))}{\hat{e}(x_i)} + \hat{\mu}_1(x_i) \right) - \frac{1}{N} \sum_i \left( \frac{(1 - t_i)(y_i - \hat{\mu}_0(x_i))}{1 - \hat{e}(x_i)} + \hat{\mu}_0(x_i) \right)
     \]
     
     \item \textit{ATT:} Following \citet{tao2019doubly}, the doubly robust estimator for the ATT compares the observed outcomes in the treated group with a weighted and augmented estimate of the control group's outcomes: 
     \[
-    \widehat{ATT}^{DR} = \frac{\sum_i \left[ T_i Y_i - \frac{ T_i - \hat{P}(X_i)}{1 - \hat{P}(X_i)} \hat{\mu}_0(X_i) \right]}{\sum_i T_i}
+    \widehat{ATT}^{DR} = \frac{\sum_i \left[ t_i y_i - \frac{ t_i - \hat{e}(x_i)}{1 - \hat{e}(x_i)} \hat{\mu}_0(x_i) \right]}{\sum_i t_i}
     \]
     
     \item \textit{ATC:} Following \citet{tao2019doubly}, the doubly robust estimator for the ATC compares the observed outcomes in the control group and a weighted and augmented estimate of the treatment group's outcomes:
     \[
-    \widehat{ATC}^{DR} = \frac{\sum_i \left[ \{ \frac{ 1 - \hat{P}(X_i)}{\hat{P}(X_i)} T_i Y_i - \frac{ T_i - \hat{P}(X_i)}{\hat{P}(X_i)} \hat{\mu}_1(X_i) \}   - (1-T_i)Y_i \right]}{\sum_i 1 - T_i}
+    \widehat{ATC}^{DR} = \frac{\sum_i \left[ \{ \frac{ 1 - \hat{e}(x_i)}{\hat{e}(x_i)} t_i y_i - \frac{ t_i - \hat{e}(X_i)}{\hat{e}(X_i)} \hat{\mu}_1(x_i) \}   - (1-t_i)y_i \right]}{\sum_i 1 - t_i}
     \]
 \end{itemize}
 
-\paragraph{Implementation Details} \todo{Details about the implementation of the Doubly Robust Estimator.}
+\paragraph{Implementation Details} We leveraged the strengths of both the outcome regression and propensity score models identified in our previous analyses. We used Random Forest classifiers for both the propensity score estimation and the outcome models, as they demonstrated superior performance in our ROC curve analyses (Figures \ref{fig:ROC_curve_Y_given_XT} and \ref{fig:ROC_curve_T_given_X}).
 
 
 
@@ -329,9 +347,10 @@ TODO:
 \newpage
 \section{Variables grouped by class}
 
-\begin{table}[h!]\label{table:variables list}
+\begin{table}[h]
 \centering
 \caption{Attributes used grouped by class of attribute.}
+\label{table:variables list}
 \begin{tabular}{|l|l|l|}
 \hline
 \textbf{Class of Attribute}           & \textbf{Attribute}                                                 & \textbf{Type}             \\ \hline
