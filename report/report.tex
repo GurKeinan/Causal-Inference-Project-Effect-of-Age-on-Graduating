@@ -1,12 +1,8 @@
-\documentclass[11pt]{article}
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{0.2em} % Adjust '1em' to your preference
+\documentclass{article}
 
 \usepackage{geometry}
 \geometry{margin=1in}
 
-\usepackage{times}  
-\usepackage{helvet}  
 
 \usepackage{amsfonts}
 \usepackage{amsmath}
@@ -16,9 +12,8 @@
 
 \usepackage{multirow}
 
-\usepackage[utf8]{inputenc}
-\usepackage[english]{babel}
 \usepackage{hyperref}
+
 \usepackage{natbib}
 \bibliographystyle{plainnat}
 
@@ -207,7 +202,7 @@ There are different covariate adjustment methods, where the separation between t
 
 \paragraph{Implementation Details} \todo{}
 
-\gur{Add RMSE comparison between different regression models, argue that we do that because the guarantees only work if the regression model is exact.}
+
 
 \subsection{Propensity-Based Methods}
 
@@ -309,7 +304,7 @@ The doubly robust method fortuitously combines both outcome regression and prope
 \begin{itemize}
     \item One graph to compare all of the results from the methods (box plots).
     \item Discussion.
-    \item Analyze correlation / dominant features.
+    \item Analyze important features.
 \end{itemize}
 
 \section{Discussion}
@@ -318,6 +313,13 @@ The doubly robust method fortuitously combines both outcome regression and prope
     \item Conclusions
     \item Possible weaknesses.
     \item Avenues for future work.
+\end{itemize}
+
+
+TODO:
+\begin{itemize}
+    \item bootstrap, boxplot, important features.
+    \item merge gur's notebooks to one "exploration".
 \end{itemize}
 
 \bibliography{references.bib}
