@@ -6,3 +6,4 @@ report/report.pdf
 .vscode/settings.json
 *.xml
 *.iml
+*.pyc
