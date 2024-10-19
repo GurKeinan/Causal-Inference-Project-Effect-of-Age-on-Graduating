@@ -82,7 +82,7 @@ socioeconomic, macroeconomic, academic data at enrollment, and academic data at 
 After the preprocessing stage, the dataset comprises 4249 records, with each record containing 21 variables. Among these variables, 5 are numerical and the rest are categorical.
 
 
-\section{Assumptions for Causal Inference}
+\section{Assumptions for Causal Inference}\label{sec:assumptions}
 
 In this section, we formally present and discuss four assumptions regarding the nature of our data. Combined, those assumptions guarantee the trustworthiness of an observational causal experiment's results.
 
@@ -176,7 +176,7 @@ Each of the three measures provides a different perspective on the causal effect
     \end{subfigure}
 \end{figure}
 
-The fundamental problem of causal inference is that directly observing causal effects is impossible. It is impossible to observe both potential outcomes of the units and compute the impact of the treatment. In the remainder of this section, we present the estimation methods we used in our analysis, explain how they are trying to handle the mentioned problem, present the assumptions each requires for truthfully estimating the causal effects, and detail the implementation of each method.
+The fundamental problem of causal inference is that directly observing causal effects is impossible. For any given individual, we can only observe the outcome under one treatment condition - either treated or untreated. We never get to see both potential outcomes for the same unit simultaneously, making it impossible to directly calculate individual treatment effects. In the remainder of this section, we present the estimation methods we used in our analysis, explain how they are trying to handle the mentioned problem, present the assumptions each requires for truthfully estimating the causal effects, and detail the implementation of each method.
 
 
 % \subsection{Covariate Adjustment}
@@ -226,17 +226,19 @@ There are different covariate adjustment methods, where the separation between t
     \]
 \end{itemize}
 
-\citet{hahn1998role} demonstrated that the S-Learner is consistent given the assumptions of unconfoundedness and overlap. This means that as the sample size increases, the S-Learner's estimates converge to the true treatment effects.
-However, the S-Learner may be prone to model misspecification, as noted by \citet{rubin1979using}. If the relationship between the covariates and the outcome is incorrectly modeled, it can lead to biased estimates of the treatment effects.
+\citet{hahn1998role} demonstrated that the S-Learner is consistent under the assumptions made in Section~\ref{sec:assumptions} and assuming that the model $\mu(X,T)$ is correctly specified. However, it may be prone to model misspecification, as noted by \citet{rubin1979using}. If the relationship between the covariates and the outcome is incorrectly modeled, it can lead to biased estimates of the treatment effects.
+
 \paragraph{T-Learner} To address the potential issues of model misspecification in the S-Learner, we also employ the T-Learner approach. The T-Learner uses separate models for the treatment and control groups, potentially reducing bias from model misspecification. It uses observations in the treatment group to estimate the response under treatment, $\hat\mu_1(x) = \hat{\mathbb{E}}[Y^{obs} | X, 1]$, and observations in the control group to estimate the response under control, $\hat\mu_0(x) = \hat{\mathbb{E}}[Y^{obs} | X, 0]$. Any machine learning method can be used to get these estimates. Calculating the average effects continues similarly to the S-Learner with $\hat \mu (X_i, T)$ replaced with $\hat \mu_T(x)$.
-\citet{greenland1986identifiability} showed that the T-Learner is consistent and, under the assumptions of unconfoundedness and overlap, is robust against misspecification of the outcome model. This robustness comes from the separate modeling of the treatment and control groups, which allows for different functional forms in each group.
+\citet{greenland1986identifiability} showed that the T-Learner is consistent under the assumptions made in Section~\ref{sec:assumptions} and robust against misspecification of the outcome model. This robustness comes from the separate modeling of the treatment and control groups, which allows for different functional forms in each group.
 
 \paragraph{Implementation Details}  we utilized Random Forest classifiers for both the S-Learner and T-Learner approaches. This choice was informed by our analysis of various classifiers' performance in predicting the outcome variable $Y$ given the covariates $X$ and treatment $T$, as illustrated in Figure \ref{fig:ROC_curve_Y_given_XT}. The Random Forest classifier demonstrated the highest Area Under the Curve (AUC) score, indicating its superior predictive performance for our dataset.
 For the S-Learner, we trained a single Random Forest model on the entire dataset, including both the covariates and the treatment variable. For the T-Learner, we trained separate Random Forest models for the treated and control groups. We used these models to predict outcomes for all individuals under both treatment conditions in both cases, allowing us to estimate average effects.
 
+\gur{Bootstrap}
+
 \subsection{Propensity-Based Methods}
 
-One of the problems with covariate adjustment methods is the sensitivity to model simplification and the sparsity of the covariates when handling high-dimensional data \citep{zhao2020propensity}. The propensity score methods of Rosenbaum and Rubin (RR) aim to address the fundamental problem by adjusting for the propensity score rather than potentially high-dimensional covariates. RR demonstrated that under the assumption of no unmeasured confounding, this is enough for unbiased estimation of causal effects and such estimation can be accomplished using simple non-parametric methods. \gur{cite the survey? \citep{abdia2017propensity}}
+One of the problems with covariate adjustment methods is the sensitivity to model specification and the sparsity of the covariates when handling high-dimensional data \citep{zhao2020propensity}. The propensity score methods of Rosenbaum and Rubin (RR) aim to address the fundamental problem by adjusting for the propensity score rather than potentially high-dimensional covariates. RR demonstrated that under the assumption of no unmeasured confounding, this is enough for unbiased estimation of causal effects. Such estimation can be accomplished using simple non-parametric methods \citep{abdia2017propensity}.
 
 \paragraph{Inverse Probability Weighting (IPW)} Relies on building a logistic regression model to estimate the probability of the exposure observed (i.e., the propensity score) for a particular individual and using the predicted probability as a weight in subsequent analyses. Our analysis uses the Horvitz–Thompson estimator \citep{horvitz1952generalization}. Intuitively, it estimates the target variable's mean in the treatment and control groups by weighting the observations based on their "membership". One must first train a logistic regression model for predicting the propensity score $\hat e(x) = \hat P(T=1 | X=x)$. Then, use it to weigh each of the samples in the following way to receive each of the average effects:
 
@@ -285,6 +287,9 @@ Once the strata are created, the treatment effect for each stratum $ \hat{\tau}_
 In the IPW method, we used these propensity scores to weight the observations, effectively creating a pseudo-population where the treatment assignment is independent of the measured confounders. We implemented safeguards against extreme propensity scores by clipping the values to a range of [1e-5, 1-1e-5] to prevent issues with very small denominators.
 For the Propensity Score Stratification method, we divided the sample into five strata based on the quintiles of the estimated propensity scores. This stratification approach is widely used in the literature and has been shown to remove up to 90\% of the bias in evaluating treatment effects. We then calculated the treatment effect within each stratum and weighted these effects according to the population proportion in each stratum to estimate the average effects.
 
+\gur{Bootstrap}
+
+
 
 \subsection{Doubly-Robust Method}
 
@@ -311,6 +316,7 @@ The doubly robust method fortuitously combines both outcome regression and prope
 
 \paragraph{Implementation Details} We leveraged the strengths of both the outcome regression and propensity score models identified in our previous analyses. We used Random Forest classifiers for both the propensity score estimation and the outcome models, as they demonstrated superior performance in our ROC curve analyses (Figures \ref{fig:ROC_curve_Y_given_XT} and \ref{fig:ROC_curve_T_given_X}).
 
+\gur{Bootstrap}
 
 
 
