@@ -160,7 +160,7 @@ Each of the three measures provides a different perspective on the causal effect
 \begin{figure}
     \centering
     \caption{ROC curves of possible classifiers \gur{change title and subtitles}}
-    \label{fig:mainfig}
+    \label{fig:ROC_curves}
     \begin{subfigure}[b]{0.45\textwidth}
         \centering
         \includegraphics[width=\textwidth]{plots/ROC_curve_Y_given_XT.png}
@@ -325,6 +325,32 @@ The doubly robust method fortuitously combines both outcome regression and prope
 
 \section{Results}
 
+\begin{figure}
+    \centering
+    \caption{Important features of classifiers}
+    \label{fig:mainfig}
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{plots/feature_importance_y_given_xt.png}
+        \caption{Feature importance of $Y | X, T$ classifier}
+        \label{fig:ROC_curve_Y_given_XT}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{plots/feature_importance_t_given_x.png}
+        \caption{Feature importance of $T | X$ classifier}
+        \label{fig:ROC_curve_T_given_X}
+    \end{subfigure}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \caption{Box plots of average effects}
+    \label{fig:box_plots}
+    \includegraphics[width = 0.8\textwidth]{plots/box_plots.png}
+\end{figure}
+
 \begin{itemize}
     \item One graph to compare all of the results from the methods (box plots).
     \item Discussion.
@@ -339,12 +365,6 @@ The doubly robust method fortuitously combines both outcome regression and prope
     \item Avenues for future work.
 \end{itemize}
 
-
-TODO:
-\begin{itemize}
-    \item bootstrap, boxplot, important features.
-    \item merge gur's notebooks to one "exploration".
-\end{itemize}
 
 \bibliography{references.bib}
 
