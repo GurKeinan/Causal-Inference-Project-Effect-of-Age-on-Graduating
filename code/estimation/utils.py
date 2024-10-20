@@ -22,6 +22,9 @@ def read_and_transform_data(data_path):
     # One-hot encoding for categorical columns
     X = pd.get_dummies(X, columns=categorical_columns, drop_first=True)
 
+    # remove from data the column Application mode_39
+    X = X.drop(columns=['Application mode_39'])
+
     return X, t, y
 
 def calculate_propensity_scores(X, t):
