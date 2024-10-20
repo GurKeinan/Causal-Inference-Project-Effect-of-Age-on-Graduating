@@ -328,19 +328,19 @@ The doubly robust method fortuitously combines both outcome regression and prope
 \begin{figure}
     \centering
     \caption{Important features of classifiers}
-    \label{fig:mainfig}
+    \label{fig:feature_importance}
     \begin{subfigure}[b]{0.45\textwidth}
         \centering
         \includegraphics[width=\textwidth]{plots/feature_importance_y_given_xt.png}
         \caption{Feature importance of $Y | X, T$ classifier}
-        \label{fig:ROC_curve_Y_given_XT}
+        \label{fig:feature_importance_y_given_xt}
     \end{subfigure}
     \hfill
     \begin{subfigure}[b]{0.45\textwidth}
         \centering
         \includegraphics[width=\textwidth]{plots/feature_importance_t_given_x.png}
         \caption{Feature importance of $T | X$ classifier}
-        \label{fig:ROC_curve_T_given_X}
+        \label{fig:feature_importance_t_given_x}
     \end{subfigure}
 \end{figure}
 
@@ -351,11 +351,33 @@ The doubly robust method fortuitously combines both outcome regression and prope
     \includegraphics[width = 0.8\textwidth]{plots/box_plots.png}
 \end{figure}
 
-\begin{itemize}
-    \item One graph to compare all of the results from the methods (box plots).
-    \item Discussion.
-    \item Analyze important features.
-\end{itemize}
+\subsection{Feature Importance Analysis}
+
+Our feature importance analysis provides valuable insights into the factors that most strongly influence the treatment assignment (T|X) and the outcome given the treatment and covariates (Y|X,T). Figure \ref{fig:feature_importance} presents the feature importance for both classifiers.
+
+As shown in Figure \ref{fig:feature_importance_t_given_x}, for predicting the treatment (T|X), the most influential feature by a significant margin is "Application mode\_39". This corresponds to "Over 23 years old", which explains its paramount importance in predicting T|X, given that our treatment variable is defined as being an adult student (21 or older) \gur{We will probably remove this feature, it is too strong}. Other notable features include previous qualification (Complete Secondary Education), application mode 43 (change of institution/course), daytime/evening attendance, and application order.
+
+In predicting the outcome (Y|X,T), Figure \ref{fig:feature_importance_y_given_xt} illustrates that the most important features are scholarship holder status, Course\_9500 (corresponding to Nursing), adult status (our treatment variable), admission grade, and gender. The high importance of scholarship status suggests that financial support plays a crucial role in a student's likelihood of graduating. Notably, our treatment variable is the third most important feature, indicating a substantial impact of age on graduation probability.
+
+\subsection{Causal Effect Estimates}
+
+Figure \ref{fig:box_plots} presents the boxplots of our causal effect estimates for the Average Treatment Effect (ATE), Average Treatment Effect on the Treated (ATT), and Average Treatment Effect on the Control (ATC) across different estimation methods. 
+
+It is important to note that the Propensity Score Stratification method shows results markedly different from other methods, with estimates close to zero and notably wide confidence intervals. This discrepancy is likely due to the unbalanced nature of our data, resulting in strata with very few or no control units, which leads to unreliable estimates. Consequently, we approach the results from this method with caution and focus our analysis on the other estimation techniques.
+
+The remaining methods -- S-Learner, T-Learner, Inverse Probability Weighting (IPW), and Doubly Robust -- all indicate a negative effect of being an adult student on the probability of graduating within the allotted time. However, we observe some variations in the magnitude and precision of these estimates. 
+
+As evident from Figure \ref{fig:box_plots}, the T-Learner, IPW, and Doubly Robust methods show a high degree of agreement in their estimates. The T-Learner estimates an ATE of approximately -0.14 (95\% CI: -0.17 to -0.11), while the IPW method produces a slightly more negative estimate of around -0.20 (95\% CI: -0.23 to -0.17). The Doubly Robust method, which theoretically should provide more reliable estimates, aligns closely with these results, estimating an ATE of approximately -0.16 (95\% CI: -0.21 to -0.11).
+
+In contrast, the S-Learner produces a less negative estimate, with an ATE of approximately -0.07 (95\% CI: -0.10 to -0.05). While this estimate still indicates a negative effect, it is notably smaller in magnitude compared to the other methods. This discrepancy may be due to the S-Learner's sensitivity to model specification, particularly in scenarios where the treatment effect varies significantly across covariate values.
+
+The confidence intervals for all these methods, excluding the Propensity Score Stratification, do not include zero, supporting the significance of the negative effect. The consistency in the direction of the effect across these diverse methods strengthens our confidence in the overall finding, despite the variations in magnitude. 
+
+As shown in Figure \ref{fig:box_plots}, the ATT and ATC estimates generally follow similar patterns to the ATE, with slight variations, suggesting that the negative effect of being an adult student on graduation probability is relatively uniform across the population.
+
+In summary, our analysis, as visualized in Figure \ref{fig:box_plots}, strongly indicates that adult students face greater challenges in graduating within the allotted time compared to traditional students. While the exact magnitude of this effect varies across estimation methods, ranging from a 7 to 20 percentage point reduction in graduation probability, the direction and significance of the effect remain consistent. These findings have important implications for educational policy and support systems for adult learners in higher education, highlighting the need for targeted interventions to improve outcomes for this student population.
+
+\gur{Currently it is all Claude with a close guidance by me, probably need to refine in some points but this is the general idea.}
 
 \section{Discussion}
 
