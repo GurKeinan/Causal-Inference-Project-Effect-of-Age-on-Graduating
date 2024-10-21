@@ -62,6 +62,8 @@ socioeconomic, macroeconomic, academic data at enrollment, and academic data at 
 
 \subsection{Data Preprocessing}
 
+\gur{removal of application mode 39 because it is too similar to treatment}
+
 \paragraph{Treatment and Target variables} Following our causal question, we introduce a new binary variable - "being 21 or older". This variable acts as the \emph{treatment variable} in our analysis. We omit the numerical age variable for the rest of the analysis. Additionally, as our question focuses on the probability of graduating from an academic program within the allotted time, we introduce another binary variable - "Graduated from an academic program within the expected timeframe" rather than the commonly used trinary variable - "graduate/ enrolled/ dropout". This variable is the \emph{target variable} in our analysis. Importantly, we consider students who are still enrolled beyond the expected completion time as not having graduated within the allotted time, aligning with the standard duration of academic programs in Portuguese higher education. The distributions of the target and treatment variables are visually presented in Figure~\ref{fig:target_and_treatments_histograms}
 
 \begin{figure}
@@ -153,7 +155,7 @@ To quantify the causal effect of the treatment on the outcome, one usually tries
 
 Each of the three measures provides a different perspective on the causal effect of the treatment. The ATE measures the average effect of the treatment on the entire population. In contrast, the ATT and ATC measures provide insights into the effect of the treatment on the treated and control units, respectively. The ATT and ATC measures are notably helpful when the treatment assignment is not controlled (not random), as in observational studies.
 
-\paragraph{Bootstrap-based confidence intervals} \todo{Complete this.}
+\paragraph{Bootstrap Confidence Intervals} To assess the uncertainty in our estimated treatment effects, we employed bootstrap resampling to calculate confidence intervals for the ATE, ATT, and ATC. We perform 1000 bootstrap iterations by default, where in each iteration, we resample the entire dataset with replacement, maintaining the original sample size. We then apply our causal inference methods to this resampled dataset, computing the ATE, ATT, and ATC. After collecting these bootstrap estimates, we calculate the 95\% confidence intervals using the percentile method, taking each effect's 2.5th and 97.5th percentiles of the bootstrap distribution. 
 
 \subsection{Methods}
 
@@ -234,7 +236,6 @@ There are different covariate adjustment methods, where the separation between t
 \paragraph{Implementation Details}  we utilized Random Forest classifiers for both the S-Learner and T-Learner approaches. This choice was informed by our analysis of various classifiers' performance in predicting the outcome variable $Y$ given the covariates $X$ and treatment $T$, as illustrated in Figure \ref{fig:ROC_curve_Y_given_XT}. The Random Forest classifier demonstrated the highest Area Under the Curve (AUC) score, indicating its superior predictive performance for our dataset.
 For the S-Learner, we trained a single Random Forest model on the entire dataset, including both the covariates and the treatment variable. For the T-Learner, we trained separate Random Forest models for the treated and control groups. We used these models to predict outcomes for all individuals under both treatment conditions in both cases, allowing us to estimate average effects.
 
-\gur{Bootstrap}
 
 \subsection{Propensity-Based Methods}
 
@@ -258,35 +259,53 @@ One of the problems with covariate adjustment methods is the sensitivity to mode
     \]
 \end{itemize}
 
-\paragraph{Propensity Score Stratification} Divides subjects into strata based on quantiles of their estimated propensity scores \citep{williamson2012propensity}. Subjects with similar propensity scores are placed into the same stratum, ensuring balance within each stratum. 
-It has been shown that stratiﬁcation with ﬁve strata based on the quantiles removes 90\% of the bias in estimating treatment effect \citep{austin2011introduction, rosenbaum1984reducing}.
-Once the strata are created, the treatment effect for each stratum $ \hat{\tau}_k $ is computed as the difference in mean outcomes between treated and control subjects. Formally, for each stratum $ k $, the treatment effect is calculated as $\hat{\tau}_k = \text{Mean}(Y_{T_k}) - \text{Mean}(Y_{C_k})$, where $ \text{Mean}(Y_{T_k}) $ is the average outcome for the treated subjects and $ \text{Mean}(Y_{C_k}) $ is the average outcome for the control subjects in the $ k $-th stratum. \yarden{I would use \(\overline{Y}_{C_k}\) instead of \(\text{Mean}(Y_{C_k})\) and in all other places as well.} The overall causal effects are then calculated by weighting these stratum-specific treatment effects according to the relevant population proportions.
+% \paragraph{Propensity Score Stratification} Divides subjects into strata based on quantiles of their estimated propensity scores \citep{williamson2012propensity}. Subjects with similar propensity scores are placed into the same stratum, ensuring balance within each stratum. 
+% It has been shown that stratiﬁcation with ﬁve strata based on the quantiles removes 90\% of the bias in estimating treatment effect \citep{austin2011introduction, rosenbaum1984reducing}.
+% Once the strata are created, the treatment effect for each stratum $ \hat{\tau}_k $ is computed as the difference in mean outcomes between treated and control subjects. Formally, for each stratum $ k $, the treatment effect is calculated as $\hat{\tau}_k = \text{Mean}(Y_{T_k}) - \text{Mean}(Y_{C_k})$, where $ \text{Mean}(Y_{T_k}) $ is the average outcome for the treated subjects and $ \text{Mean}(Y_{C_k}) $ is the average outcome for the control subjects in the $ k $-th stratum. \yarden{I would use \(\overline{Y}_{C_k}\) instead of \(\text{Mean}(Y_{C_k})\) and in all other places as well.} The overall causal effects are then calculated by weighting these stratum-specific treatment effects according to the relevant population proportions.
 
+% \begin{itemize}
+%     \item \textit{ATE:} Weigh each stratum's treatment effect by the proportion of the total population in that stratum:
+%     \[
+%     \widehat{ATE}^{STR} = \sum_{k=1}^{K} \frac{N_k}{N} \hat{\tau}_k,
+%     \]
+%     where $ N_k $ is the number of subjects in the $ k $-th stratum, and $ N $ is the total number of subjects in the entire sample. 
+
+%     \item \textit{ATT:} Weigh each stratum’s treatment effect by the proportion of treated subjects in that stratum:
+%     \[
+%     \widehat{ATT}^{STR} = \sum_{k=1}^{K} \frac{N_{T_k}}{N_T} \hat{\tau}_k,
+%     \]
+%     where $ N_{T_k} $ is the number of treated subjects in the $ k $-th stratum, and $ N_T $ is the total number of treated subjects.
+
+%     \item \textit{ATC:} Weigh each stratum's treatment effect by the proportion of control subjects in that stratum:
+%     \[
+%     \widehat{ATC}^{STR} = \sum_{k=1}^{K} \frac{N_{C_k}}{N_C} \hat{\tau}_k,
+%     \]
+%     where $ N_{C_k} $ is the number of control subjects in the $ k $-th stratum, and $ N_C $ is the total number of control subjects.
+% \end{itemize}
+
+\paragraph{Propensity Score Matching} This method pairs treated units with control units that have similar propensity scores, effectively creating a matched sample where the distribution of observed baseline covariates is similar between treated and untreated subjects \citep{austin2011introduction}. In our implementation, we use a nearest neighbor approach with replacement, allowing for multiple matches per unit. For each unit $i$, we find the $n$ closest matches (where $n = 11$ in our implementation) based on propensity scores. Let $\mathcal{M}i$ denote the set of indices of the $n$ nearest neighbors for unit $i$ in the opposite treatment group. We calculate weights $w_{ij}$ for each match $j \in \mathcal{M}_i$ inversely proportional to the distance in propensity scores 
+$w_{ij} = \frac{1/d_{ij}}{\sum_{k \in \mathcal{M}i} 1/d{ik}}$
+where $d_{ij}$ is the absolute difference in propensity scores between units $i$ and $j$. The individual treatment effect for unit $i$ is then calculated as
+$\tau_i = \begin{cases}
+y_i - \sum_{j \in \mathcal{M}i} w_{ij}y_j & \text{if } t_i = 1 \\
+\sum_{j \in \mathcal{M}i} w_{ij}y_j - y_i & \text{if } t_i = 0
+\end{cases}
+$.
+The average effects are then calculated as follows:
 \begin{itemize}
-    \item \textit{ATE:} Weigh each stratum's treatment effect by the proportion of the total population in that stratum:
-    \[
-    \widehat{ATE}^{STR} = \sum_{k=1}^{K} \frac{N_k}{N} \hat{\tau}_k,
-    \]
-    where $ N_k $ is the number of subjects in the $ k $-th stratum, and $ N $ is the total number of subjects in the entire sample. 
+\item \textit{ATE:} $\widehat{ATE}^{PSM} = \frac{1}{N} \sum_{i=1}^N \tau_i$, where $N$ is the total number of units. This represents the overall average treatment effect for the entire population, calculated by averaging the individual treatment effects over all units, regardless of whether they received the treatment or not.
 
-    \item \textit{ATT:} Weigh each stratum’s treatment effect by the proportion of treated subjects in that stratum:
-    \[
-    \widehat{ATT}^{STR} = \sum_{k=1}^{K} \frac{N_{T_k}}{N_T} \hat{\tau}_k,
-    \]
-    where $ N_{T_k} $ is the number of treated subjects in the $ k $-th stratum, and $ N_T $ is the total number of treated subjects.
+\item \textit{ATT:} $\widehat{ATT}^{PSM} = \frac{1}{N_1} \sum_{i:t_i=1} \tau_i$, where $N_1$ is the number of treated units. This represents the average treatment effect for the treated group, calculated by averaging the individual treatment effects over all units that received the treatment.
 
-    \item \textit{ATC:} Weigh each stratum's treatment effect by the proportion of control subjects in that stratum:
-    \[
-    \widehat{ATC}^{STR} = \sum_{k=1}^{K} \frac{N_{C_k}}{N_C} \hat{\tau}_k,
-    \]
-    where $ N_{C_k} $ is the number of control subjects in the $ k $-th stratum, and $ N_C $ is the total number of control subjects.
+\item \textit{ATC:} $\widehat{ATC}^{PSM} = \frac{1}{N_0} \sum_{i:t_i=0} \tau_i$, where $N_0$ is the number of control units. This represents the average treatment effect for the control group, calculated by averaging the individual treatment effects over all units that did not receive the treatment.
+
 \end{itemize}
+This method can be particularly effective in reducing bias due to confounding variables, especially when there is a sufficient overlap in the propensity score distributions between the treated and control groups \citep{rosenbaum1983central}.
 
 
 \paragraph{Implementation Details} We again utilized a Random Forest classifier to estimate the propensity scores. This decision was based on the classifier performance analysis for predicting the treatment assignment (T) given the covariates (X), as shown in Figure \ref{fig:ROC_curve_T_given_X}. The Random Forest classifier exhibited the highest AUC score, indicating its effectiveness in estimating propensity scores for our dataset.
 In the IPW method, we used these propensity scores to weight the observations, effectively creating a pseudo-population where the treatment assignment is independent of the measured confounders. We implemented safeguards against extreme propensity scores by clipping the values to a range of [1e-5, 1-1e-5] to prevent issues with very small denominators.
-For the Propensity Score Stratification method, we divided the sample into five strata based on the quintiles of the estimated propensity scores. This stratification approach is widely used in the literature and has been shown to remove up to 90\% of the bias in evaluating treatment effects. We then calculated the treatment effect within each stratum and weighted these effects according to the population proportion in each stratum to estimate the average effects.
-
+For the Propensity Score Matching method, we employed a nearest neighbor approach with replacement, allowing for multiple matches per unit. We used 11 nearest neighbors for each unit to balance between bias reduction and variance. The matching was performed separately for estimating ATT and ATC, with treated units being matched to control units for ATT, and vice versa for ATC. We calculated weights for each match inversely proportional to the distance in propensity scores, giving more importance to closer matches. This approach allows us to leverage more information from the data compared to one-to-one matching, potentially improving the precision of our estimates while still effectively reducing bias from confounding variables.
 \gur{Bootstrap}
 
 
@@ -325,6 +344,40 @@ The doubly robust method fortuitously combines both outcome regression and prope
 
 \section{Results}
 
+\gur{I think it is better to refute the stratification first because of imbalance and then continue to discuss the other methods.}
+
+\subsection{Comparison of Different Methods for Causal Inference}
+The box plot in Figure~\ref{fig:box_plots} presents the results for estimating the Average Treatment Effect (ATE), Average Treatment on the Treated (ATT), and Average Treatment on the Controls (ATC) using several causal inference methods. The methods compared are the S-Learner, T-Learner, Inverse Probability Weighting (IPW), Propensity Score Stratification, and Doubly Robust methods.
+
+\paragraph{ATE Estimates}
+For the ATE estimates, the S-Learner and T-Learner show close results. However, the IPW method provides the lowest mean ATE estimate with less variability compared to other methods. The Propensity Score Stratification method exhibits a wider range of ATE estimates, which indicates higher variability. On the other hand, the Doubly Robust approach shows a mean estimate slightly lower than those of other methods, except for the IPW, with a wider interquartile range that points to increased variability while still maintaining a reasonable spread.
+
+\paragraph{ATT Estimates}
+For ATT estimates, the S-Learner and T-Learner again show close results, indicating consistent estimations of treatment effect on the treated population. The IPW method, however, produces a lower ATT estimate, which suggests a possible underestimation of the treatment effect on treated individuals. The Propensity Score Stratification method yields a higher ATT estimate with a slightly wider spread. The Doubly Robust estimator presents a wider spread of estimates but shows a higher median.
+
+\paragraph{ATC Estimates}
+For ATC estimates, the S-Learner and T-Learner again show similar results for estimating the treatment effect on untreated individuals. The IPW method produces a slightly lower mean ATC estimate, compared to the other methods. The Propensity Score Stratification method shows greater variability in ATC estimates and a higher mean. The Doubly Robust estimator yields an ATC estimate close to the one produced by the IPW method, but with a larger range of estimates. \\
+
+
+In summary, the results indicate that the S-Learner and T-Learner methods consistently provide similar estimates for ATE, ATT, and ATC. The IPW method generally produces lower effect estimates, which could be attributed to its dependence on accurate propensity score modeling. In contrast, the Propensity Score Stratification method exhibits higher variability, possibly reflecting its sensitivity to the choice of strata cut-off points. The Doubly Robust estimator, meanwhile, delivers slightly higher estimates than the IPW with greater variability.
+
+\subsection{Important Features}
+
+\gur{Need to be careful not to say anything here about the causal effect of the variables; it is just importance in classification}
+
+\paragraph{Important Features for \({Y|X,T}\)}
+The bar plot in Figure~\ref{fig:feature_importance_y_given_xt} displays the feature importance for predicting the outcome variable \( Y \) given covariates \( X \) and the treatment variable \( T \). It illustrates how various features contribute to predicting the target variable in a conditional model where both \( X \) and \( T \) are included. The feature with the highest importance is \textit{Scholarship holder\_1}, indicating that whether an individual holds a scholarship is the most influential factor in predicting the outcome. This is followed by the \textit{Adult} variable, which is our treatment variable. This highlights that the status of being an adult above the age of 21 when starting higher education also plays a significant role in shaping the predicted outcome. Additionally, features such as \textit{Course\_9500} and \textit{Gender\_1} show notable importance, indicating that specific course enrollments and gender are relevant predictors in the model.
+
+Academic-related features such as \textit{Admission grade}, \textit{Previous qualification (grade)}, and various course identifiers (e.g., \textit{Course\_9119}, \textit{Course\_9853}) also contribute substantially, suggesting that past academic performance and specific course enrollments are key predictors of the outcome. Economic indicators such as the \textit{Unemployment rate} and \textit{GDP} show moderate influence. Other variables, such as the \textit{Mother's qualification - Higher Education - Postgraduate} and parental occupations, have lower feature importance scores but still contribute to the model.
+
+\paragraph{Important Features for \(T|X\)}
+The bar plot in Figure~\ref{fig:feature_importance_t_given_x} displays the feature importance for predicting the treatment variable \( T \) given covariates \( X \). It highlights the most significant factors that influence whether an individual receives the treatment based on their characteristics. The features with the highest importance are \textit{Daytime/evening attendance\_1}, followed by \textit{Previous qualification\_Complete Secondary Education}. Other notable features include \textit{Application order\_1} and \textit{Marital status\_2}.
+
+Academic performance measures such as \textit{Admission grade} and \textit{Previous qualification (grade)} also contribute substantially to predicting the treatment variable. Additionally, variables like \textit{Displaced\_1} and different modes of application (e.g., \textit{Application mode\_17}, \textit{Application mode\_44}) are significant predictors.
+
+Other features such as \textit{Scholarship holder\_1}, \textit{Gender\_1}, and \textit{Marital status\_4} exhibit moderate importance. Economic indicators like \textit{GDP} and \textit{Inflation rate} have lower feature importance scores, but their presence suggests that broader economic conditions may still be relevant to predicting individual's chances of getting the treatment.
+
+
 \begin{figure}
     \centering
     \caption{Important features of classifiers}
@@ -351,33 +404,7 @@ The doubly robust method fortuitously combines both outcome regression and prope
     \includegraphics[width = 0.8\textwidth]{plots/box_plots.png}
 \end{figure}
 
-\subsection{Feature Importance Analysis}
 
-Our feature importance analysis provides valuable insights into the factors that most strongly influence the treatment assignment (T|X) and the outcome given the treatment and covariates (Y|X,T). Figure \ref{fig:feature_importance} presents the feature importance for both classifiers.
-
-As shown in Figure \ref{fig:feature_importance_t_given_x}, for predicting the treatment (T|X), the most influential feature by a significant margin is "Application mode\_39". This corresponds to "Over 23 years old", which explains its paramount importance in predicting T|X, given that our treatment variable is defined as being an adult student (21 or older) \gur{We will probably remove this feature, it is too strong}. Other notable features include previous qualification (Complete Secondary Education), application mode 43 (change of institution/course), daytime/evening attendance, and application order.
-
-In predicting the outcome (Y|X,T), Figure \ref{fig:feature_importance_y_given_xt} illustrates that the most important features are scholarship holder status, Course\_9500 (corresponding to Nursing), adult status (our treatment variable), admission grade, and gender. The high importance of scholarship status suggests that financial support plays a crucial role in a student's likelihood of graduating. Notably, our treatment variable is the third most important feature, indicating a substantial impact of age on graduation probability.
-
-\subsection{Causal Effect Estimates}
-
-Figure \ref{fig:box_plots} presents the boxplots of our causal effect estimates for the Average Treatment Effect (ATE), Average Treatment Effect on the Treated (ATT), and Average Treatment Effect on the Control (ATC) across different estimation methods. 
-
-It is important to note that the Propensity Score Stratification method shows results markedly different from other methods, with estimates close to zero and notably wide confidence intervals. This discrepancy is likely due to the unbalanced nature of our data, resulting in strata with very few or no control units, which leads to unreliable estimates. Consequently, we approach the results from this method with caution and focus our analysis on the other estimation techniques.
-
-The remaining methods -- S-Learner, T-Learner, Inverse Probability Weighting (IPW), and Doubly Robust -- all indicate a negative effect of being an adult student on the probability of graduating within the allotted time. However, we observe some variations in the magnitude and precision of these estimates. 
-
-As evident from Figure \ref{fig:box_plots}, the T-Learner, IPW, and Doubly Robust methods show a high degree of agreement in their estimates. The T-Learner estimates an ATE of approximately -0.14 (95\% CI: -0.17 to -0.11), while the IPW method produces a slightly more negative estimate of around -0.20 (95\% CI: -0.23 to -0.17). The Doubly Robust method, which theoretically should provide more reliable estimates, aligns closely with these results, estimating an ATE of approximately -0.16 (95\% CI: -0.21 to -0.11).
-
-In contrast, the S-Learner produces a less negative estimate, with an ATE of approximately -0.07 (95\% CI: -0.10 to -0.05). While this estimate still indicates a negative effect, it is notably smaller in magnitude compared to the other methods. This discrepancy may be due to the S-Learner's sensitivity to model specification, particularly in scenarios where the treatment effect varies significantly across covariate values.
-
-The confidence intervals for all these methods, excluding the Propensity Score Stratification, do not include zero, supporting the significance of the negative effect. The consistency in the direction of the effect across these diverse methods strengthens our confidence in the overall finding, despite the variations in magnitude. 
-
-As shown in Figure \ref{fig:box_plots}, the ATT and ATC estimates generally follow similar patterns to the ATE, with slight variations, suggesting that the negative effect of being an adult student on graduation probability is relatively uniform across the population.
-
-In summary, our analysis, as visualized in Figure \ref{fig:box_plots}, strongly indicates that adult students face greater challenges in graduating within the allotted time compared to traditional students. While the exact magnitude of this effect varies across estimation methods, ranging from a 7 to 20 percentage point reduction in graduation probability, the direction and significance of the effect remain consistent. These findings have important implications for educational policy and support systems for adult learners in higher education, highlighting the need for targeted interventions to improve outcomes for this student population.
-
-\gur{Currently it is all Claude with a close guidance by me, probably need to refine in some points but this is the general idea.}
 
 \section{Discussion}
 
