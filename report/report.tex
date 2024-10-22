@@ -233,8 +233,8 @@ There are different covariate adjustment methods, where the separation between t
 \paragraph{T-Learner} To address the potential issues of model misspecification in the S-Learner, we also employ the T-Learner approach. The T-Learner uses separate models for the treatment and control groups, potentially reducing bias from model misspecification. It uses observations in the treatment group to estimate the response under treatment, $\hat\mu_1(x) = \hat{\mathbb{E}}[Y^{obs} | X, 1]$, and observations in the control group to estimate the response under control, $\hat\mu_0(x) = \hat{\mathbb{E}}[Y^{obs} | X, 0]$. Any machine learning method can be used to get these estimates. Calculating the average effects continues similarly to the S-Learner with $\hat \mu (X_i, T)$ replaced with $\hat \mu_T(x)$.
 \citet{greenland1986identifiability} showed that the T-Learner is consistent under the assumptions made in Section~\ref{sec:assumptions} and robust against misspecification of the outcome model. This robustness comes from the separate modeling of the treatment and control groups, which allows for different functional forms in each group.
 
-\paragraph{Implementation Details}  we utilized Random Forest classifiers for both the S-Learner and T-Learner approaches. This choice was informed by our analysis of various classifiers' performance in predicting the outcome variable $Y$ given the covariates $X$ and treatment $T$, as illustrated in Figure \ref{fig:ROC_curve_Y_given_XT}. The Random Forest classifier demonstrated the highest Area Under the Curve (AUC) score, indicating its superior predictive performance for our dataset.
-For the S-Learner, we trained a single Random Forest model on the entire dataset, including both the covariates and the treatment variable. For the T-Learner, we trained separate Random Forest models for the treated and control groups. We used these models to predict outcomes for all individuals under both treatment conditions in both cases, allowing us to estimate average effects.
+\paragraph{Implementation Details} We utilized Gradient Boosting classifiers for both the S-Learner and T-Learner approaches. This choice was informed by our analysis of various classifiers' performance in predicting the outcome variable $Y$ given the covariates $X$ and treatment $T$, as illustrated in Figure \ref{fig:ROC_curve_Y_given_XT}. The Gradient Boosting classifier demonstrated the highest Area Under the Curve (AUC) score, indicating its superior predictive performance for our dataset.
+For the S-Learner, we trained a single Gradient Boosting model on the entire dataset, including both the covariates and the treatment variable. For the T-Learner, we trained separate Gradient Boosting models for the treated and control groups. We used these models to predict outcomes for all individuals under both treatment conditions in both cases, allowing us to estimate average effects.
 
 
 \subsection{Propensity-Based Methods}
@@ -303,7 +303,7 @@ The average effects are then calculated as follows:
 This method can be particularly effective in reducing bias due to confounding variables, especially when there is a sufficient overlap in the propensity score distributions between the treated and control groups \citep{rosenbaum1983central}.
 
 \gur{Random forest in propensity, Gradient boosting in $Y$}
-\paragraph{Implementation Details} We again utilized a Random Forest classifier to estimate the propensity scores. This decision was based on the classifier performance analysis for predicting the treatment assignment (T) given the covariates (X), as shown in Figure \ref{fig:ROC_curve_T_given_X}. The Random Forest classifier exhibited the highest AUC score, indicating its effectiveness in estimating propensity scores for our dataset.
+\paragraph{Implementation Details} We utilized a Random Forest classifier to estimate the propensity scores. This decision was based on the classifier performance analysis for predicting the treatment assignment (T) given the covariates (X), as shown in Figure \ref{fig:ROC_curve_T_given_X}. The Random Forest classifier exhibited the highest AUC score, indicating its effectiveness in estimating propensity scores for our dataset.
 In the IPW method, we used these propensity scores to weight the observations, effectively creating a pseudo-population where the treatment assignment is independent of the measured confounders. We implemented safeguards against extreme propensity scores by clipping the values to a range of [1e-5, 1-1e-5] to prevent issues with very small denominators.
 For the Propensity Score Matching method, we employed a nearest neighbor approach with replacement, allowing for multiple matches per unit. We used 11 nearest neighbors for each unit to balance between bias reduction and variance. The matching was performed separately for estimating ATT and ATC, with treated units being matched to control units for ATT, and vice versa for ATC. We calculated weights for each match inversely proportional to the distance in propensity scores, giving more importance to closer matches. This approach allows us to leverage more information from the data compared to one-to-one matching, potentially improving the precision of our estimates while still effectively reducing bias from confounding variables.
 \gur{Bootstrap}
@@ -333,50 +333,13 @@ The doubly robust method fortuitously combines both outcome regression and prope
     \]
 \end{itemize}
 
-\paragraph{Implementation Details} We leveraged the strengths of both the outcome regression and propensity score models identified in our previous analyses. We used Random Forest classifiers for both the propensity score estimation and the outcome models, as they demonstrated superior performance in our ROC curve analyses (Figures \ref{fig:ROC_curve_Y_given_XT} and \ref{fig:ROC_curve_T_given_X}).
-
-\gur{Bootstrap}
-
-
-
-
-
+\paragraph{Implementation Details} We leveraged the strengths of both the outcome regression and propensity score models identified in our previous analyses. We used Gradient Boosting to model the potential outcomes and Random Forest for the propensity score model. This decision is supported by \ref{fig:ROC_curves} and is consistent with the implementation in the previous methods.
 
 \section{Results}
 
-\gur{I think it is better to refute the stratification first because of imbalance and then continue to discuss the other methods.}
+In this section, we present our findings regarding the causal effect of adult enrollment on graduation probability, examining both the relationships between variables through feature importance analysis and the estimated average treatment effects through various methodologies.
 
-\subsection{Comparison of Different Methods for Causal Inference}
-The box plot in Figure~\ref{fig:box_plots} presents the results for estimating the Average Treatment Effect (ATE), Average Treatment on the Treated (ATT), and Average Treatment on the Controls (ATC) using several causal inference methods. The methods compared are the S-Learner, T-Learner, Inverse Probability Weighting (IPW), Propensity Score Stratification, and Doubly Robust methods.
-
-\paragraph{ATE Estimates}
-For the ATE estimates, the S-Learner and T-Learner show close results. However, the IPW method provides the lowest mean ATE estimate with less variability compared to other methods. The Propensity Score Stratification method exhibits a wider range of ATE estimates, which indicates higher variability. On the other hand, the Doubly Robust approach shows a mean estimate slightly lower than those of other methods, except for the IPW, with a wider interquartile range that points to increased variability while still maintaining a reasonable spread.
-
-\paragraph{ATT Estimates}
-For ATT estimates, the S-Learner and T-Learner again show close results, indicating consistent estimations of treatment effect on the treated population. The IPW method, however, produces a lower ATT estimate, which suggests a possible underestimation of the treatment effect on treated individuals. The Propensity Score Stratification method yields a higher ATT estimate with a slightly wider spread. The Doubly Robust estimator presents a wider spread of estimates but shows a higher median.
-
-\paragraph{ATC Estimates}
-For ATC estimates, the S-Learner and T-Learner again show similar results for estimating the treatment effect on untreated individuals. The IPW method produces a slightly lower mean ATC estimate, compared to the other methods. The Propensity Score Stratification method shows greater variability in ATC estimates and a higher mean. The Doubly Robust estimator yields an ATC estimate close to the one produced by the IPW method, but with a larger range of estimates. \\
-
-
-In summary, the results indicate that the S-Learner and T-Learner methods consistently provide similar estimates for ATE, ATT, and ATC. The IPW method generally produces lower effect estimates, which could be attributed to its dependence on accurate propensity score modeling. In contrast, the Propensity Score Stratification method exhibits higher variability, possibly reflecting its sensitivity to the choice of strata cut-off points. The Doubly Robust estimator, meanwhile, delivers slightly higher estimates than the IPW with greater variability.
-
-\subsection{Important Features}
-
-\gur{Need to be careful not to say anything here about the causal effect of the variables; it is just importance in classification}
-
-\paragraph{Important Features for \({Y|X,T}\)}
-The bar plot in Figure~\ref{fig:feature_importance_y_given_xt} displays the feature importance for predicting the outcome variable \( Y \) given covariates \( X \) and the treatment variable \( T \). It illustrates how various features contribute to predicting the target variable in a conditional model where both \( X \) and \( T \) are included. The feature with the highest importance is \textit{Scholarship holder\_1}, indicating that whether an individual holds a scholarship is the most influential factor in predicting the outcome. This is followed by the \textit{Adult} variable, which is our treatment variable. This highlights that the status of being an adult above the age of 21 when starting higher education also plays a significant role in shaping the predicted outcome. Additionally, features such as \textit{Course\_9500} and \textit{Gender\_1} show notable importance, indicating that specific course enrollments and gender are relevant predictors in the model.
-
-Academic-related features such as \textit{Admission grade}, \textit{Previous qualification (grade)}, and various course identifiers (e.g., \textit{Course\_9119}, \textit{Course\_9853}) also contribute substantially, suggesting that past academic performance and specific course enrollments are key predictors of the outcome. Economic indicators such as the \textit{Unemployment rate} and \textit{GDP} show moderate influence. Other variables, such as the \textit{Mother's qualification - Higher Education - Postgraduate} and parental occupations, have lower feature importance scores but still contribute to the model.
-
-\paragraph{Important Features for \(T|X\)}
-The bar plot in Figure~\ref{fig:feature_importance_t_given_x} displays the feature importance for predicting the treatment variable \( T \) given covariates \( X \). It highlights the most significant factors that influence whether an individual receives the treatment based on their characteristics. The features with the highest importance are \textit{Daytime/evening attendance\_1}, followed by \textit{Previous qualification\_Complete Secondary Education}. Other notable features include \textit{Application order\_1} and \textit{Marital status\_2}.
-
-Academic performance measures such as \textit{Admission grade} and \textit{Previous qualification (grade)} also contribute substantially to predicting the treatment variable. Additionally, variables like \textit{Displaced\_1} and different modes of application (e.g., \textit{Application mode\_17}, \textit{Application mode\_44}) are significant predictors.
-
-Other features such as \textit{Scholarship holder\_1}, \textit{Gender\_1}, and \textit{Marital status\_4} exhibit moderate importance. Economic indicators like \textit{GDP} and \textit{Inflation rate} have lower feature importance scores, but their presence suggests that broader economic conditions may still be relevant to predicting individual's chances of getting the treatment.
-
+\subsection{Feature Importance Analysis}
 
 \begin{figure}
     \centering
@@ -397,12 +360,26 @@ Other features such as \textit{Scholarship holder\_1}, \textit{Gender\_1}, and \
     \end{subfigure}
 \end{figure}
 
+The feature importance analysis was conducted using different approaches for the two classification tasks, as shown in Figure~\ref{fig:feature_importance}. We employed a Random Forest classifier to predict the treatment assignment ($T|X$) and analyzed feature importance using the built-in importance scores based on mean decrease in impurity (Gini importance). We used a Gradient Boosting classifier to predict the outcome given covariates and treatment ($Y|X,T$). We examined its feature importance metrics based on the accumulated reduction in the loss function across all trees.
+
+For the treatment prediction ($T|X$), as illustrated in Figure~\ref{fig:feature_importance_t_given_x}, the most informative features are ``Daytime/evening attendance'' and ``Previous qualification\_Complete Secondary Education'', with importance scores of approximately 0.19 and 0.18 respectively. This suggests these variables strongly correlate with whether a student enrolls as an adult. The application order, marital status, and admission grades also show substantial predictive power for the treatment assignment.
+
+For the outcome prediction ($Y|X,T$), shown in Figure~\ref{fig:feature_importance_y_given_xt}, scholarship holder status emerges as the most informative feature with an importance score of about 0.25. Notably, the treatment variable (``Adult'') appears as the second most informative predictor, with an importance score around 0.12, indicating its strong correlation with graduation outcomes. Course-specific variables (particularly Course\_9500) and gender also demonstrate substantial predictive power. Academic performance indicators such as admission grade and previous qualification grades are also among the top predictive features.
+
+\subsection{Average Effects Analysis}
+
 \begin{figure}
     \centering
     \caption{Box plots of average effects}
     \label{fig:box_plots}
     \includegraphics[width = 0.8\textwidth]{plots/box_plots.png}
 \end{figure}
+
+The box plots in Figure~\ref{fig:box_plots} reveal consistent patterns across different estimation methods, with some notable variations in both magnitude and uncertainty. For the Average Treatment Effect (ATE), the S-Learner and T-Learner show remarkable agreement, both estimating an effect around $-0.12$ with relatively narrow confidence intervals. The IPW and Doubly Robust estimators also align closely, showing slightly more negative estimates around $-0.15$. While the PSM method shows higher variance, its median estimate remains negative. Importantly, confidence intervals across all methods exclude zero, suggesting a robust negative effect.
+
+The patterns observed in the ATE estimates largely persist in both the ATT and ATC estimates, though with slightly different magnitudes. For both measures, the S-Learner and T-Learner continue to show strong agreement, with estimates around $-0.11$ for ATT and $-0.13$ for ATC. The IPW and Doubly Robust methods estimate slightly more negative effects in both cases. The PSM method consistently shows the highest variance among all methods, with confidence intervals barely including zero in the case of ATC. However, the overall negative trend remains consistent across all methods and measures.
+
+The consistency of negative effects across all three measures (ATE, ATT, and ATC) and most estimation methods provides strong evidence for a negative relationship between adult enrollment and graduation probability. The similarity in magnitude across ATE, ATT, and ATC suggests this relationship is relatively uniform across different subpopulations. While the PSM method shows higher variance, its general alignment with the negative trend supports the robustness of these findings.
 
 
 
