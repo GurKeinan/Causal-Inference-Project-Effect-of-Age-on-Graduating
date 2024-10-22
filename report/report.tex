@@ -293,7 +293,7 @@ y_i - \sum_{j \in \mathcal{M}i} w_{ij}y_j & \text{if } t_i = 1 \\
 $.
 The average effects are then calculated as follows:
 \begin{itemize}
-\item \textit{ATE:} $\widehat{ATE}^{PSM} = \frac{1}{N} \sum_{i=1}^N \tau_i$, where $N$ is the total number of units. This represents the overall average treatment effect for the entire population, calculated by averaging the individual treatment effects over all units, regardless of whether they received the treatment or not.
+\item \textit{ATE:} Following \citet{basu2023understanding}, the ATE estimator is $\widehat{ATE}^{PSM} = \frac{1}{N} \sum_{i=1}^N \tau_i$, where $N$ is the total number of units. This represents the overall average treatment effect for the entire population, calculated by averaging the individual treatment effects over all units, regardless of whether they received the treatment or not.
 
 \item \textit{ATT:} $\widehat{ATT}^{PSM} = \frac{1}{N_1} \sum_{i:t_i=1} \tau_i$, where $N_1$ is the number of treated units. This represents the average treatment effect for the treated group, calculated by averaging the individual treatment effects over all units that received the treatment.
 
@@ -368,7 +368,7 @@ For the outcome prediction ($Y|X,T$), shown in Figure~\ref{fig:feature_importanc
 
 \subsection{Average Effects Analysis}
 
-\begin{figure}
+\begin{figure}[h!]
     \centering
     \caption{Box plots of average effects}
     \label{fig:box_plots}
@@ -381,15 +381,45 @@ The patterns observed in the ATE estimates largely persist in both the ATT and A
 
 The consistency of negative effects across all three measures (ATE, ATT, and ATC) and most estimation methods provides strong evidence for a negative relationship between adult enrollment and graduation probability. The similarity in magnitude across ATE, ATT, and ATC suggests this relationship is relatively uniform across different subpopulations. While the PSM method shows higher variance, its general alignment with the negative trend supports the robustness of these findings.
 
-
-
 \section{Discussion}
 
-\begin{itemize}
-    \item Conclusions
-    \item Possible weaknesses.
-    \item Avenues for future work.
-\end{itemize}
+This study investigated the causal effect of enrolling as an adult student (age 21 or older) on the probability of graduating from academic programs within the allotted time. Through rigorous analysis using multiple estimation methods and a comprehensive dataset from Portuguese higher education institutions, we found consistent evidence of a negative relationship between adult enrollment and graduation probability.
+
+The results across different estimation methods (S-Learner, T-Learner, IPW, PSM, and Doubly Robust) consistently showed negative effects, with average treatment effects (ATE) ranging from approximately -0.12 to -0.15. This suggests that, on average, adult students are 12-15 percentage points less likely to graduate within the allotted time compared to their younger counterparts. The consistency of these findings across different methodologies strengthens our confidence in this conclusion.
+
+Importantly, the similarity between the Average Treatment Effect on the Treated (ATT) and the Average Treatment Effect on the Controls (ATC) suggests that this negative effect is relatively uniform across the population. This implies that the challenges faced by adult students in completing their degrees within the expected timeframe are not significantly different between those who currently choose to enroll as adults and those who don't.
+
+Our feature importance analysis revealed that scholarship status, course type, and academic performance indicators are strongly predictive of graduation outcomes. The treatment variable (adult status) emerged as the second most important predictor of graduation outcomes, further supporting its significance in academic success. Additionally, evening attendance and previous qualifications were found to be strongly associated with adult enrollment, suggesting these factors play important roles in the decision to pursue higher education as an adult.
+
+Several limitations should be considered when interpreting our results:
+
+\begin{enumerate}
+    \item \textbf{Population Restriction}: Our analysis is based exclusively on Portuguese higher education institutions, which may limit the generalizability of our findings to other educational systems and cultural contexts. After data preprocessing, our sample consisted entirely of Portuguese nationals, further restricting the population representation.
+
+    \item \textbf{Sample Size}: With 4,249 records after preprocessing, our sample size, while adequate for statistical analysis, may not capture the full diversity of student experiences and circumstances.
+
+    \item \textbf{Unmeasured Confounders}: Despite our comprehensive set of covariates, we lack data on important psychological factors such as motivation, stress levels, and study habits. These unmeasured confounders could potentially affect both the decision to enroll as an adult and academic success.
+
+    \item \textbf{SUTVA Assumption}: Our analysis assumes no interference between units, but the presence of adult students might affect the learning environment and outcomes of younger students, potentially violating this assumption.
+
+    \item \textbf{Post-Treatment Bias}: We had to exclude potentially informative variables about academic progression because they were measured after treatment assignment, which might have limited our ability to understand the mechanisms through which age affects graduation probability.
+
+    \item \textbf{Time-Varying Factors}: Our data represents a specific time period in Portuguese higher education, and the relationships we observed might change over time due to evolving educational policies and societal changes.
+\end{enumerate}
+
+Several promising directions for future research emerge from our study:
+
+\begin{enumerate}
+    \item \textbf{Cross-Cultural Validation}: Extending this analysis to educational systems in other countries would help understand how cultural and institutional differences affect the relationship between age and academic success.
+
+    \item \textbf{Longitudinal Studies}: Following students over extended periods would allow investigation of long-term outcomes beyond graduation, including career progression and lifetime earnings.
+
+    \item \textbf{Thorough Investigation}: Future studies could focus on understanding the specific challenges adult students face, potentially through mixed-methods research incorporating qualitative data collection.
+
+    \item \textbf{Alternative Outcomes}: Expanding the analysis to consider other measures of academic success beyond graduation within the allotted time, such as final GPA or employment outcomes.
+    
+    \item \textbf{Psychological Factors}: Including measures of psychological variables like motivation, stress, and study habits could provide a more complete understanding of the age-success relationship.
+\end{enumerate}
 
 
 \bibliography{references.bib}
