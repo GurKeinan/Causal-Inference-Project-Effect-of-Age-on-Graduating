@@ -1,0 +1,98 @@
+\begin{thebibliography}{17}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Abdia et~al.(2017)Abdia, Kulasekera, Datta, Boakye, and Kong]{abdia2017propensity}
+Younathan Abdia, KB~Kulasekera, Somnath Datta, Maxwell Boakye, and Maiying Kong.
+\newblock Propensity scores based methods for estimating average treatment effect and average treatment effect among treated: a comparative study.
+\newblock \emph{Biometrical Journal}, 59\penalty0 (5):\penalty0 967--985, 2017.
+
+\bibitem[Alyahyan and D{\"u}{\c{s}}teg{\"o}r(2020)]{alyahyan2020predicting}
+Eyman Alyahyan and Dilek D{\"u}{\c{s}}teg{\"o}r.
+\newblock Predicting academic success in higher education: literature review and best practices.
+\newblock \emph{International Journal of Educational Technology in Higher Education}, 17\penalty0 (1):\penalty0 3, 2020.
+
+\bibitem[Austin(2011)]{austin2011introduction}
+Peter~C Austin.
+\newblock An introduction to propensity score methods for reducing the effects of confounding in observational studies.
+\newblock \emph{Multivariate behavioral research}, 46\penalty0 (3):\penalty0 399--424, 2011.
+
+\bibitem[Bang and Robins(2005)]{bang2005doubly}
+Heejung Bang and James~M Robins.
+\newblock Doubly robust estimation in missing data and causal inference models.
+\newblock \emph{Biometrics}, 61\penalty0 (4):\penalty0 962--973, 2005.
+
+\bibitem[Basu et~al.(2023)Basu, Unuigbe, and Masseria]{basu2023understanding}
+Anirban Basu, Aig Unuigbe, and Cristina Masseria.
+\newblock Understanding differences between what alternate propensity score methods estimate.
+\newblock \emph{Journal of Managed Care \& Specialty Pharmacy}, 29\penalty0 (4):\penalty0 391--399, 2023.
+
+\bibitem[Greenland and Robins(1986)]{greenland1986identifiability}
+Sander Greenland and James~M Robins.
+\newblock Identifiability, exchangeability, and epidemiological confounding.
+\newblock \emph{International journal of epidemiology}, 15\penalty0 (3):\penalty0 413--419, 1986.
+
+\bibitem[Hahn(1998)]{hahn1998role}
+Jinyong Hahn.
+\newblock On the role of the propensity score in efficient semiparametric estimation of average treatment effects.
+\newblock \emph{Econometrica}, pages 315--331, 1998.
+
+\bibitem[Hern{\'a}n and Robins(2006)]{hernan2006estimating}
+Miguel~A Hern{\'a}n and James~M Robins.
+\newblock Estimating causal effects from epidemiological data.
+\newblock \emph{Journal of Epidemiology \& Community Health}, 60\penalty0 (7):\penalty0 578--586, 2006.
+
+\bibitem[Horvitz and Thompson(1952)]{horvitz1952generalization}
+Daniel~G Horvitz and Donovan~J Thompson.
+\newblock A generalization of sampling without replacement from a finite universe.
+\newblock \emph{Journal of the American statistical Association}, 47\penalty0 (260):\penalty0 663--685, 1952.
+
+\bibitem[Lechner(2001)]{lechner2001identification}
+Michael Lechner.
+\newblock \emph{Identification and estimation of causal effects of multiple treatments under the conditional independence assumption}.
+\newblock Springer, 2001.
+
+\bibitem[OECD(2022)]{/content/publication/a9c95902-en}
+OECD.
+\newblock \emph{Review of Inclusive Education in Portugal}.
+\newblock 2022.
+\newblock \doi{https://doi.org/https://doi.org/10.1787/a9c95902-en}.
+\newblock URL \url{https://www.oecd-ilibrary.org/content/publication/a9c95902-en}.
+
+\bibitem[Realinho et~al.(2022)Realinho, Machado, Baptista, and Martins]{data7110146}
+Valentim Realinho, Jorge Machado, Luís Baptista, and Mónica~V. Martins.
+\newblock Predicting student dropout and academic success.
+\newblock \emph{Data}, 7\penalty0 (11), 2022.
+\newblock ISSN 2306-5729.
+\newblock \doi{10.3390/data7110146}.
+\newblock URL \url{https://www.mdpi.com/2306-5729/7/11/146}.
+
+\bibitem[Rosenbaum and Rubin(1983)]{rosenbaum1983central}
+Paul~R Rosenbaum and Donald~B Rubin.
+\newblock The central role of the propensity score in observational studies for causal effects.
+\newblock \emph{Biometrika}, 70\penalty0 (1):\penalty0 41--55, 1983.
+
+\bibitem[Rubin(1979)]{rubin1979using}
+Donald~B Rubin.
+\newblock Using multivariate matched sampling and regression adjustment to control bias in observational studies.
+\newblock \emph{Journal of the American Statistical Association}, 74\penalty0 (366a):\penalty0 318--328, 1979.
+
+\bibitem[Schulz et~al.(2023)Schulz, Moodie, and Shortreed]{schulz2023no}
+Juliana Schulz, Erica~EM Moodie, and Susan~M Shortreed.
+\newblock No unmeasured confounding: Known unknowns or… not?
+\newblock \emph{American Journal of Epidemiology}, 192\penalty0 (9):\penalty0 1604--1605, 2023.
+
+\bibitem[Tao and Fu(2019)]{tao2019doubly}
+Yebin Tao and Haoda Fu.
+\newblock Doubly robust estimation of the weighted average treatment effect for a target population.
+\newblock \emph{Statistics in medicine}, 38\penalty0 (3):\penalty0 315--325, 2019.
+
+\bibitem[Zhao et~al.(2020)Zhao, van Dyk, and Imai]{zhao2020propensity}
+Shandong Zhao, David~A van Dyk, and Kosuke Imai.
+\newblock Propensity score-based methods for causal inference in observational studies with non-binary treatments.
+\newblock \emph{Statistical methods in medical research}, 29\penalty0 (3):\penalty0 709--727, 2020.
+
+\end{thebibliography}
