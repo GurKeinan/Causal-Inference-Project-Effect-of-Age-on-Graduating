@@ -48,16 +48,16 @@ pip install pandas numpy scikit-learn matplotlib seaborn
 ## Usage
 
 1. First, run the preprocessing script to prepare the data:
-python preprocessing.py
+python preprocessing.py with the DATA_PATH variable correctly specified.
 
-2. Run any of the individual estimation methods:
+2. Run any of the individual estimation methods with the DATA_PATH variable correctly specified to point to the output of the previous step.
 python s_learner.py
 python t_learner.py
 python inverse_probability_weighting.py
 python propensity_score_matching.py
 python doubly_robust.py
 
-3. For a comprehensive analysis, run the Jupyter notebooks in the following order:
+3. For a comprehensive analysis, run the Jupyter notebooks in the following order with the DATA_PATH variable correctly specified to point to the output of step 1.
    - `Exploration and Common Support.ipynb`
    - `Comparing Classifiers and Important Features.ipynb`
    - `Estimating Average Effects.ipynb`
