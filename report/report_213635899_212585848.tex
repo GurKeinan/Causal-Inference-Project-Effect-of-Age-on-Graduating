@@ -225,7 +225,7 @@ One of the problems with covariate adjustment methods is the sensitivity to mode
     \[
     \widehat{ATT}^{IPW} = \frac{\sum_{i=1}^N t_i y_i}{\sum_{i=1}^N T_i} - \frac{\sum_{i=1}^N (1-t_i)y_i \cdot \frac{\hat e(x_i)}{1- \hat e(x_i)}}{\sum_{i=1}^N (1-t_i) \cdot \frac{\hat e(x_i)}{1-\hat e(x_i)}}
     \]
-    \item \textit{ATC:} Compare the mean of the treatment control with a weighted mean of the treatment group, where units with lower propensity scores (more likely to be a part of the control group) have more influence.
+    \item \textit{ATC:} Compare the mean of the control group with a weighted mean of the treatment group, where units with lower propensity scores (more likely to be a part of the control group) have more influence.
     \[
     \widehat{ATC}^{IPW} = \frac{\sum_{i=1}^N t_iy_i \cdot \frac{1-\hat e(x_i)}{\hat e(x_i)}}{\sum_{i=1}^N t_i \cdot \frac{1-\hat e(x_i)}{\hat e(x_i)}} - \frac{\sum_{i=1}^N (1-t_i)y_i}{\sum_{i=1}^N (1-T_i)}
     \]
