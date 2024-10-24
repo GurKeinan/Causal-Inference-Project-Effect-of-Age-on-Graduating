@@ -57,7 +57,7 @@ python inverse_probability_weighting.py
 python propensity_score_matching.py
 python doubly_robust.py
 
-3. For a comprehensive analysis, run the Jupyter notebooks in the following order with the DATA_PATH variable correctly specified to point to the output of step 1.
+3. For a comprehensive analysis, run the Jupyter notebooks in the following order with the DATA_PATH variable correctly specified to point to the output of step 1. In the notebook 'Estimating Average Effects.ipynb', one needs to change the variable 'PATH_TO_ESTIMATION_METHODS' to the directory where the methods files are located.
    - `Exploration and Common Support.ipynb`
    - `Comparing Classifiers and Important Features.ipynb`
    - `Estimating Average Effects.ipynb`
