@@ -15,6 +15,8 @@
 
 \usepackage{hyperref}
 
+\usepackage{pdfpages}
+
 \usepackage[round]{natbib}
 \bibliographystyle{plainnat}
 
@@ -35,7 +37,7 @@
 \maketitle
 
 \begin{abstract}
-    Many adolescents worldwide have wondered when they should start their journey in higher education. The writers of this project themselves had decided long ago to join the 'Atuda' program, which means starting university at the relatively young age of eighteen. Thus, it is natural to wonder - does the student's age at the start of learning at the university affect the success of the student? An answer to this question can drastically change the landscape of the campuses worldwide and the grades of those studying there. In this Causal Inference project, we aim to explore precisely that. Specifically, we investigate the following causal question: \emph{What is the causal effect of enrolling as an adult student (age 21 or older) on the probability of graduating from an academic program within the allotted time?} Throughout this project, we present and explore the data we use to address this question and determine its suitability for causal analysis tasks, formally present the methods we use to answer the research question, present and discuss the analysis results, and conclude the project. One can find all of the resources used in the project in this \href{https://github.com/GurKeinan/Causal-Inference-Project-Effect-of-Age-on-Graduating}{GitHub repository}.
+    Many adolescents worldwide have wondered when they should start their journey in higher education. The writers of this project themselves had decided long ago to join the "Atuda" program, which means starting university at the relatively young age of eighteen. Thus, it is natural to wonder - does the student's age at the start of learning at the university affect the success of the student? An answer to this question can drastically change the landscape of the campuses worldwide and the grades of those studying there. In this Causal Inference project, we aim to explore precisely that. Specifically, we investigate the following causal question: \emph{What is the causal effect of enrolling as an adult student (age 21 or older) on the probability of graduating from an academic program within the allotted time?} Throughout this project, we present and explore the data we use to address this question and determine its suitability for causal analysis tasks, formally present the methods we use to answer the research question, present and discuss the analysis results, and conclude the project. One can find all of the resources used in the project in this \href{https://github.com/GurKeinan/Causal-Inference-Project-Effect-of-Age-on-Graduating}{GitHub repository}.
 \end{abstract}
 
 \section{Data Review and Preprocessing}
@@ -46,7 +48,7 @@ To investigate the relationship between age at enrollment and academic success, 
 
 The data used in our project originated from research done in Portugal by the \href{https://www.ipportalegre.pt/pt/}{Polytechnic Institute of Portalegre} (higher education institute that focuses on technology), as an attempt to provide information to the tutoring team about the risk of students' dropout and failure \citep{data7110146}. Commonly, it is used to build machine learning models for predicting academic performance and dropout (see relevant \href{https://www.kaggle.com/datasets/ankanhore545/dropout-or-academic-success/data}{Kaggle competitions in this subject}).
 
-The data contains information about students' pre-academic background, age, academic performance, social and economic status, and other relevant variables. It consists of 4424 records and 37 variables, including the enrollment age. The dataset includes a trinary outcome variable indicating whether a student dropped out, graduated, or is still enrolled in the academic program after its predetermined period.
+The data contains information about students' pre-academic background, age, academic performance, social and economic status, and other relevant variables. It consists of 4424 records and 37 variables, including the enrollment age. The dataset includes a trinary outcome variable indicating whether a student dropped out, graduated, or is still enrolled in the academic program after its predetermined period. A comprehensive description of all features, their types, and possible values is provided in Appendix~\ref{appendix:feature_description}.
 
 The data was created by joining three primary data sources: 
 \begin{enumerate}
@@ -59,7 +61,7 @@ Traditionally, each attribute used in the dataset is associated with one of the 
 
 \subsection{Data Preprocessing}
 
-\paragraph{Treatment and Target variables} Following our causal question, we introduce a new binary variable - "being 21 or older". This variable acts as the \emph{treatment variable} in our analysis. We omit the numerical age variable for the rest of the analysis. Additionally, as our question focuses on the probability of graduating from an academic program within the allotted time, we introduce another binary variable - "Graduated from an academic program within the expected time frame" rather than the commonly used trinary variable - "graduate/ enrolled/ dropout". This variable is the \emph{target variable} in our analysis. Importantly, we consider students still enrolled beyond the expected completion time as not having graduated within the allotted time, aligning with the standard duration of academic programs in Portuguese higher education. The target and treatment variables distributions are visually presented in Figure~\ref{fig:target_and_treatments_histograms}.
+\paragraph{Treatment and Target variables} Following our causal question, we introduce a new binary variable - "enrolling as an adult student (over 21)". This variable acts as the \emph{treatment variable} in our analysis. We omit the numerical age variable for the rest of the analysis. Additionally, as our question focuses on the probability of graduating from an academic program within the allotted time, we introduce another binary variable - "Graduated from an academic program within the expected time frame" rather than the commonly used trinary variable - "graduate/ enrolled/ dropout". This variable is the \emph{target variable} in our analysis. Importantly, we consider students still enrolled beyond the expected completion time as not having graduated within the allotted time, aligning with the standard duration of academic programs in Portuguese higher education. The target and treatment variables distributions are visually presented in Figure~\ref{fig:target_and_treatments_histograms}.
 
 \begin{figure}
     \centering
@@ -70,13 +72,13 @@ Traditionally, each attribute used in the dataset is associated with one of the 
 
 \paragraph{Removal of post-treatment variables} The dataset contains multiple variables gathered throughout the student's academic journey, e.g., academic accomplishments, debts, and payment tracking. Despite being informative for machine learning models trying to predict academic dropout, these accomplishments were recorded after the treatment was determined and, therefore, cannot be safely used in the causal inference procedure. We eliminated those variables to maintain the integrity of our results and prevent any post-treatment interference.
 
-\paragraph{Removal of treatment-correlated features} During the one-hot encoding of categorical variables, we deliberately excluded the dummy variable representing `Application mode 39 - Over 23 years old' since this feature is strongly correlated with our treatment variable (being 21 or older). Including this dummy variable could have introduced redundancy and potentially biased our analysis.
+\paragraph{Removal of treatment-correlated features} During the one-hot encoding of categorical variables, we deliberately excluded the dummy variable representing "Application mode 39 - Over 23 years old" since this feature is strongly correlated with our treatment variable (being 21 or older). Including this dummy variable could have introduced redundancy and potentially biased our analysis.
 
-\paragraph{Clustering categorical values} The dataset is of impressive complexity and detail, as evident by the categorical variables with over 30 unique values. To perform meaningful analysis, we manually cluster similar categories into one broader category to represent them instead of simply removing the less frequent value. For example, we merged the values 'Armed Forces Professions', 'Armed Forces Officers', and 'Armed Forces Sergeants' into a single 'Armed Forces' category, which functions as a single value in the analysis. We performed this procedure on five variables within the data set - the qualifications and occupations of the parents (mother and father) and the student's previous qualifications. 
+\paragraph{Clustering categorical values} The dataset is of impressive complexity and detail, as evident by the categorical variables with over 30 unique values. To perform meaningful analysis, we manually cluster similar categories into one broader category to represent them instead of simply removing the less frequent value. For example, we merged the values "Armed Forces Professions", "Armed Forces Officers", and "Armed Forces Sergeants" into a single "Armed Forces" category, which functions as a single value in the analysis. We performed this procedure on five variables within the data set - the qualifications and occupations of the parents (mother and father) and the student's previous qualifications. 
 
 \paragraph{Pruning categorical outliers} Even after performing the previous step, some variables still contained rare values. After careful consideration and visual inspections, we decided to prune some of the rare values to ease the analysis. The pruning resulted in a sample exclusively consisting of individuals with Portuguese nationality, which may limit the generalizability of this study to a broader population. 
 
-After the preprocessing stage, the dataset comprises 4249 records, each containing 21 variables. Five of these variables are numerical, and the rest are categorical.
+After the preprocessing stage, the dataset comprises 4249 records, each containing 21 variables, including the treatment and target variables. Five of these variables are numerical, and the rest are categorical.
 
 
 \section{Assumptions for Causal Inference}\label{sec:assumptions}
@@ -87,7 +89,7 @@ In this section, we formally present and discuss four assumptions regarding the 
 
 The SUTVA assumption consists of two parts. The first one is \emph{no interference}, which requires that the potential outcomes of each unit are not affected by the treatment assignment of any other unit; the second is \emph{no hidden variations of treatment}, which forbids the existence of different forms or versions of each treatment level, which lead to different potential outcomes.
 
-In our experiment, the treatment variable, 'enrolling as an adult student (over 21)', is well-defined and has only two versions. Hence, the second part of the assumption safely holds. The assumption's first part holds if we presume one student's adulthood does not affect the probability of his fellow student graduating from the program, which is controversial. There are several aspects in which the varied spectrum of ages on the campus might affect the students' success. Such elements include but are not limited to 1) peer effects - encountering different perspectives and learning methods (that can be related to one's age) might affect one's abilities; and 2) In competitive programs, students' success may be directly affected by their peers' accomplishments. Therefore, if age is indeed related to one's academic achievements, one student's age can affect other students' success.
+In our experiment, the treatment variable, "enrolling as an adult student (over 21)", is well-defined and has only two versions. Hence, the second part of the assumption safely holds. The assumption's first part holds if we presume one student's adulthood does not affect the probability of his fellow student graduating from the program, which is controversial. There are several aspects in which the varied spectrum of ages on the campus might affect the students' success. Such elements include but are not limited to 1) peer effects - encountering different perspectives and learning methods (that can be related to one's age) might affect one's abilities; and 2) In competitive programs, students' success may be directly affected by their peers' accomplishments. Therefore, if age is indeed related to one's academic achievements, one student's age can affect other students' success.
 
 \subsection{Consistency}
 
@@ -273,7 +275,7 @@ The doubly robust method fortuitously combines both outcome regression and prope
     \]
 \end{itemize}
 
-The doubly robust estimator uses 'augmentation' terms, combining outcome modeling and propensity score weighting. For example, in the ATE estimator, the terms $(y_i - \hat{\mu}_1(x_i))$ and $(y_i - \hat{\mu}_0(x_i))$ represent the difference between observed outcomes and predicted outcomes. These augmentation terms act as `error corrections'. If the outcome model is misspecified, the propensity score weighting helps correct the bias, and if the propensity score model is misspecified, the outcome model helps correct the bias. This dual correction mechanism provides the estimator's `double robustness' property.
+The doubly robust estimator uses "augmentation" terms, combining outcome modeling and propensity score weighting. For example, in the ATE estimator, the terms $(y_i - \hat{\mu}_1(x_i))$ and $(y_i - \hat{\mu}_0(x_i))$ represent the difference between observed outcomes and predicted outcomes. These augmentation terms act as "error corrections". If the outcome model is misspecified, the propensity score weighting helps correct the bias, and if the propensity score model is misspecified, the outcome model helps correct the bias. This dual correction mechanism provides the estimator's `double robustness' property.
 
 \paragraph{Implementation Details} We leveraged the strengths of both the outcome regression and propensity score models identified in our previous analyses. We used Gradient Boosting to model the potential outcomes and Random Forest for the propensity score model. This decision is supported by Figure~\ref{fig:ROC_curves} and is consistent with the implementation in the previous methods.
 
@@ -304,9 +306,9 @@ In this section, we present our findings regarding the causal effect of adult en
 
 The feature importance analysis was conducted using different approaches for the two classification tasks, as shown in Figure~\ref{fig:feature_importance}. We employed a Random Forest classifier to predict the treatment assignment ($T|X$) and analyzed feature importance using the built-in importance scores based on mean decrease in impurity (Gini importance). We used a Gradient Boosting classifier to predict the outcome given covariates and treatment ($Y|X, T$). We examined its feature importance metrics based on the accumulated reduction in the loss function across all trees.
 
-For the treatment prediction ($T|X$), as illustrated in Figure~\ref{fig:feature_importance_t_given_x}, the most informative features are ``Daytime/evening attendance'' and ``Previous qualification\_Complete Secondary Education'', with importance scores of approximately $0.205$ and $0.187$ respectively. This suggests these variables strongly correlate with whether a student enrolls as an adult. The application order, marital status, and admission grades also show substantial predictive power for the treatment assignment.
+For the treatment prediction ($T|X$), as illustrated in Figure~\ref{fig:feature_importance_t_given_x}, the most informative features are "Daytime/evening attendance" and "Previous qualification\_Complete Secondary Education", with importance scores of approximately $0.205$ and $0.187$ respectively. This suggests these variables strongly correlate with whether a student enrolls as an adult. The application order, marital status, and admission grades also show substantial predictive power for the treatment assignment.
 
-For the outcome prediction ($Y|X, T$), shown in Figure~\ref{fig:feature_importance_y_given_xt}, scholarship holder status emerges as the most informative feature with an importance score of about $0.277$. Notably, the treatment variable (``Adult'') appears as the second most informative predictor, with an importance score around $0.101$, indicating its strong correlation with graduation outcomes. Course-specific variables (particularly Course\_9500, which corresponds to Nursing) and gender also demonstrate substantial predictive power. Academic performance indicators such as admission grade and previous qualification grades are also among the top predictive features.
+For the outcome prediction ($Y|X, T$), shown in Figure~\ref{fig:feature_importance_y_given_xt}, scholarship holder status emerges as the most informative feature with an importance score of about $0.277$. Notably, the treatment variable ("Adult") appears as the second most informative predictor, with an importance score around $0.101$, indicating its strong correlation with graduation outcomes. Course-specific variables (particularly Course\_9500, which corresponds to Nursing) and gender also demonstrate substantial predictive power. Academic performance indicators such as admission grade and previous qualification grades are also among the top predictive features.
 
 \subsection{Average Effects Analysis}
 
@@ -316,6 +318,12 @@ For the outcome prediction ($Y|X, T$), shown in Figure~\ref{fig:feature_importan
     \label{fig:box_plots}
     \includegraphics[width = 0.8\textwidth]{plots/box_plots.png}
 \end{figure}
+
+The box plots in Figure~\ref{fig:box_plots} provide a visualization of the distribution of estimated treatment effects across different methods. Each box represents the interquartile range (IQR) containing 50\% of the estimates, with the horizontal line within each box showing the median estimate. The lower and upper edges of each box represent the 25th and 75th percentiles, respectively. The whiskers extend to the most extreme data points that are not considered outliers (within 1.5 times the IQR), while individual points beyond the whiskers represent outlier estimates.
+
+For each method, black error bars with caps represent the 95\% confidence intervals. The middle point of these error bars indicates the mean estimate, while the upper and lower caps show the bounds of the confidence interval. The methods are distinguished by color coding: S-Learner (light blue), T-Learner (light green), IPW (light pink), PSM (light grey), and Doubly Robust (light yellow).
+
+The vertical axis quantifies the magnitude of the effect, where negative values indicate that being an adult student reduces the probability of graduating, positive values suggest an increase in graduation probability, and zero represents no effect.
 
 The box plots in Figure~\ref{fig:box_plots} reveal consistent patterns across different estimation methods, with some notable variations in both magnitude and uncertainty. For the Average Treatment Effect (ATE), both the S-Learner and T-Learner estimate an effect around $-0.12$ with relatively narrow confidence intervals. The IPW and Doubly Robust estimators also align closely, showing slightly more negative estimates around $-0.17$. While the PSM method shows higher variance, its median estimate remains negative. Importantly, confidence intervals across all methods exclude zero, suggesting a robust negative effect.
 
@@ -369,7 +377,13 @@ Several promising directions for future research emerge from our study:
 \appendix
 
 \newpage
-\section{Variables grouped by class}
+\section{Comprehensive Description of all the Features}\label{appendix:feature_description}
+
+The following pages contain a detailed description of all features in the dataset, including their types and possible values, as provided by the original dataset authors.
+
+\includepdf[pages=-]{Features information.pdf}
+
+The following table contains a partition of the features to the classes: demographic, socioeconomic, macroeconomic, academic data at enrollment, and academic data at the end of the first and second semesters.
 
 \begin{table}[h]
 \centering
@@ -415,9 +429,6 @@ Several promising directions for future research emerge from our study:
 Target                               & Target                                                             & Categorical               \\ \hline
 \end{tabular}
 \end{table}
-
-
-
 
 
 \end{document}
